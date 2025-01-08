@@ -1,20 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-
-const stocks = [
-  { symbol: "AAPL", name: "Apple Inc.", score: 89.1 },
-  { symbol: "MSFT", name: "Microsoft Corporation", score: 78.5 },
-  { symbol: "NVDA", name: "NVIDIA Corporation", score: 93.8 },
-  { symbol: "GOOGL", name: "Alphabet Inc.", score: 85.2 },
-  { symbol: "AMZN", name: "Amazon.com, Inc.", score: 82.7 },
-  // Add more stocks as needed
-]
+import { getStocks } from "@/utils/api"
+import { Stock } from "@/utils/types" // Import the shared Stock type
 
 export function StockList() {
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        const fetchedStocks = await getStocks();
+        console.log(fetchedStocks);
+        setStocks(fetchedStocks);
+      } catch (error) {
+        console.error("Error fetching stocks:", error);
+      }
+    };
+    fetchStocks();
+  }, []);
 
   const filteredStocks = stocks.filter(
     (stock) =>
@@ -34,7 +41,7 @@ export function StockList() {
           <TableRow>
             <TableHead>Symbol</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>QOINN Score</TableHead>
+            <TableHead>Current Price</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -42,7 +49,7 @@ export function StockList() {
             <TableRow key={stock.symbol}>
               <TableCell className="font-medium">{stock.symbol}</TableCell>
               <TableCell>{stock.name}</TableCell>
-              <TableCell>{stock.score}</TableCell>
+              <TableCell>${stock.current_price.toFixed(2)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -50,4 +57,3 @@ export function StockList() {
     </div>
   )
 }
-

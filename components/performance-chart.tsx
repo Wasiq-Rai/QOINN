@@ -1,59 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Line, LineChart, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { format, subDays, subMonths, subYears } from "date-fns"
+import { getPerformanceData } from "@/utils/api"
+import { PerformanceData } from "@/utils/types"
 
-interface PerformanceChartProps {
-  type: "theoretical" | "real"
-}
-
-export function PerformanceChart({ type }: PerformanceChartProps) {
+export function PerformanceChart() {
   const [timeframe, setTimeframe] = useState("1mo")
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([])
 
-  const generateData = (days: number) => {
-    const data = []
-    let qoinnValue = 100
-    let vooValue = 100
-    for (let i = days; i >= 0; i--) {
-      const date = subDays(new Date(), i)
-      qoinnValue *= 1 + (Math.random() * 0.02 - 0.005)
-      vooValue *= 1 + (Math.random() * 0.015 - 0.005)
-      data.push({
-        date: format(date, "yyyy-MM-dd"),
-        QOINN: Number(qoinnValue.toFixed(2)),
-        VOO: Number(vooValue.toFixed(2)),
-      })
-    }
-    return data
-  }
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      try {
+        const data = await getPerformanceData();
+        // setPerformanceData(data); // Ensure data is an array of PerformanceData
+      } catch (error) {
+        console.error("Error fetching performance data:", error);
+      }
+    };
+    fetchPerformance();
+  }, []);
 
-  const getDataForTimeframe = (timeframe: string) => {
+  const filterDataByTimeframe = (data: PerformanceData[], timeframe: string) => {
+    const now = new Date();
+    let startDate = new Date();
+    
     switch (timeframe) {
-      case "1w": return generateData(7)
-      case "1mo": return generateData(30)
-      case "3mo": return generateData(90)
-      case "6mo": return generateData(180)
-      case "1y": return generateData(365)
-      case "3y": return generateData(1095)
-      default: return generateData(30)
+      case "1w":
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case "1mo":
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case "3mo":
+        startDate.setMonth(now.getMonth() - 3);
+        break;
+      case "6mo":
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case "1y":
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      case "3y":
+        startDate.setFullYear(now.getFullYear() - 3);
+        break;
+      default:
+        startDate.setMonth(now.getMonth() - 1);
     }
-  }
 
-  const data = getDataForTimeframe(timeframe)
+    return data.filter(item => new Date(item.date) >= startDate);
+  };
 
-  const calculatePerformance = (data: any[]) => {
-    const start = data[0]
-    const end = data[data.length - 1]
-    return {
-      QOINN: ((end.QOINN - start.QOINN) / start.QOINN * 100).toFixed(2),
-      VOO: ((end.VOO - start.VOO) / start.VOO * 100).toFixed(2)
-    }
-  }
+  const filteredData = filterDataByTimeframe(performanceData, timeframe);
 
-  const performance = calculatePerformance(data)
+  const calculatePerformance = (data: PerformanceData[]) => {
+    if (data.length < 2) return 0;
+    const start = data[0].value;
+    const end = data[data.length - 1].value;
+    return ((end - start) / start * 100).toFixed(2);
+  };
+
+  const performance = calculatePerformance(filteredData);
 
   return (
     <div className="space-y-4">
@@ -74,7 +83,7 @@ export function PerformanceChart({ type }: PerformanceChartProps) {
       </div>
       <div className="h-[400px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={filteredData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
@@ -82,39 +91,22 @@ export function PerformanceChart({ type }: PerformanceChartProps) {
             <Legend />
             <Line
               type="monotone"
-              dataKey="QOINN"
+              dataKey="value"
               stroke="#2563eb"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="VOO"
-              stroke="#dc2626"
               strokeWidth={2}
               dot={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium">QOINN Performance</div>
-            <div className={`text-2xl font-bold ${Number(performance.QOINN) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {performance.QOINN}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm font-medium">VOO Performance</div>
-            <div className={`text-2xl font-bold ${Number(performance.VOO) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {performance.VOO}%
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="text-sm font-medium">Performance</div>
+          <div className={`text-2xl font-bold ${Number(performance) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {performance}%
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
