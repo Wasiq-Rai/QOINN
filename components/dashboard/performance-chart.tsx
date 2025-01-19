@@ -1,43 +1,39 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { motion, useAnimation } from 'framer-motion'
-import { getPerformanceData } from '@/utils/api'
-import { ChartData } from '@/utils/types'
-import { Upload, Edit2, RefreshCw } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { motion, AnimatePresence } from "framer-motion"
+import { getPerformanceData } from "@/utils/api"
+import type { ChartData } from "@/utils/types"
+import { Upload, Edit2, RefreshCw } from "lucide-react"
+import { CombinedChart } from "./Charts/CombinedChart"
 
 export function PerformanceChart() {
-  const [data, setData] = useState<any>([])
+  const [simulatedData, setSimulatedData] = useState<ChartData[]>([])
+  const [realData, setRealData] = useState<ChartData[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeModel, setActiveModel] = useState('M15')
+  const [activeModel, setActiveModel] = useState("M15")
+  const [activeTimeframe, setActiveTimeframe] = useState("1d")
   const [editMode, setEditMode] = useState(false)
   const [theoreticalData, setTheoreticalData] = useState<number[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const controls = useAnimation()
 
   useEffect(() => {
-    fetchData(activeModel)
-  }, [activeModel])
+    fetchData(activeModel, activeTimeframe)
+  }, [activeModel, activeTimeframe])
 
-  const fetchData = async (model: string) => {
+  const fetchData = async (model: string, timeframe: string) => {
     setIsLoading(true)
     try {
-      const response = await getPerformanceData(model)
-      const formattedData = response.dates.map((date: string, index: number) => ({
-        date,
-        SPY: response.spy[index],
-        VOO: response.voo[index],
-        Model: response.model[index],
-      }))
-      setData(formattedData)
-      setTheoreticalData(response.model)
-      await controls.start({ opacity: 1, y: 0 })
+      const response = await getPerformanceData(model, timeframe)
+      setSimulatedData(response.simulatedData)
+      setRealData(response.realData)
+      setTheoreticalData(response.simulatedData.map((item) => item.model).flat())
     } catch (error) {
       console.error("Error fetching performance data:", error)
     } finally {
@@ -47,7 +43,10 @@ export function PerformanceChart() {
 
   const handleModelChange = (model: string) => {
     setActiveModel(model)
-    controls.start({ opacity: 0, y: 20 })
+  }
+
+  const handleTimeframeChange = (timeframe: string) => {
+    setActiveTimeframe(timeframe)
   }
 
   const handleEditToggle = () => {
@@ -56,7 +55,7 @@ export function PerformanceChart() {
 
   const handleDataChange = (index: number, value: string) => {
     const newData = [...theoreticalData]
-    newData[index] = parseFloat(value)
+    newData[index] = Number.parseFloat(value)
     setTheoreticalData(newData)
     updateChartData(newData)
   }
@@ -67,7 +66,7 @@ export function PerformanceChart() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const content = e.target?.result as string
-        const uploadedData = content.split(',').map(Number)
+        const uploadedData = content.split(",").map(Number)
         setTheoreticalData(uploadedData)
         updateChartData(uploadedData)
       }
@@ -76,15 +75,16 @@ export function PerformanceChart() {
   }
 
   const updateChartData = (newTheoreticalData: number[]) => {
-    const updatedData = data.map((item: any, index: any | number) => ({
-      ...item,
-      Model: newTheoreticalData[index],
-    }))
-    setData(updatedData)
+    setSimulatedData((prevData) =>
+      prevData.map((item, index) => ({
+        ...item,
+        Model: newTheoreticalData[index],
+      })),
+    )
   }
 
   const resetData = () => {
-    fetchData(activeModel)
+    fetchData(activeModel, activeTimeframe)
   }
 
   if (isLoading) {
@@ -106,9 +106,7 @@ export function PerformanceChart() {
     <Card>
       <CardHeader>
         <CardTitle>QOINN Performance Chart</CardTitle>
-        <CardDescription>
-          Compare QOINN's performance against major market indices
-        </CardDescription>
+        <CardDescription>Compare QOINN's performance against major market indices</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="chart" className="space-y-4">
@@ -119,103 +117,111 @@ export function PerformanceChart() {
           <TabsContent value="chart">
             <div className="space-y-4">
               <div className="flex space-x-2">
-                <Button
-                  variant={activeModel === 'M15' ? 'default' : 'outline'}
-                  onClick={() => handleModelChange('M15')}
-                >
-                  M15
-                </Button>
-                <Button
-                  variant={activeModel === 'M16' ? 'default' : 'outline'}
-                  onClick={() => handleModelChange('M16')}
-                >
-                  M16
-                </Button>
-                <Button
-                  variant={activeModel === 'M17' ? 'default' : 'outline'}
-                  onClick={() => handleModelChange('M17')}
-                >
-                  M17
-                </Button>
+                <Select onValueChange={handleModelChange} defaultValue={activeModel}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M15">M15</SelectItem>
+                    <SelectItem value="M16">M16</SelectItem>
+                    <SelectItem value="M17">M17</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select onValueChange={handleTimeframeChange} defaultValue={activeTimeframe}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select timeframe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1m">1 Minute</SelectItem>
+                    <SelectItem value="3m">3 Minutes</SelectItem>
+                    <SelectItem value="5m">5 Minutes</SelectItem>
+                    <SelectItem value="15m">15 Minutes</SelectItem>
+                    <SelectItem value="30m">30 Minutes</SelectItem>
+                    <SelectItem value="1h">1 Hour</SelectItem>
+                    <SelectItem value="1d">1 Day</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={controls}
-                transition={{ duration: 0.5 }}
-                className="h-[400px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="SPY" stroke="#8884d8" dot={false} />
-                    <Line type="monotone" dataKey="VOO" stroke="#82ca9d" dot={false} />
-                    <Line type="monotone" dataKey="Model" stroke="#ff7300" dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </motion.div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${activeModel}-${activeTimeframe}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <CombinedChart simulatedData={simulatedData} realData={realData} />
+                </motion.div>
+              </AnimatePresence>
             </div>
           </TabsContent>
           <TabsContent value="edit">
-            <div className="space-y-4 max-h-screen">
+            <div className="space-y-4">
               <div className="flex space-x-2">
                 <Button onClick={handleEditToggle}>
                   <Edit2 className="mr-2 h-4 w-4" />
-                  {editMode ? 'View' : 'Edit'}
+                  {editMode ? "View" : "Edit"}
                 </Button>
                 <Button onClick={() => fileInputRef.current?.click()}>
                   <Upload className="mr-2 h-4 w-4" />
                   Upload CSV
                 </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                />
+                <input type="file" ref={fileInputRef} className="hidden" accept=".csv" onChange={handleFileUpload} />
                 <Button onClick={resetData}>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Reset
                 </Button>
               </div>
-              {editMode ? (
-                <div className="grid grid-cols-4 gap-4 h-[400px] overflow-y-auto">
-                  {theoreticalData.map((value, index) => (
-                    <div key={index}>
-                      <Label htmlFor={`data-${index}`}>Day {index + 1}</Label>
-                      <Input
-                        id={`data-${index}`}
-                        type="number"
-                        value={value}
-                        onChange={(e) => handleDataChange(index, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-[400px] overflow-y-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr>
-                        <th>Day</th>
-                        <th>Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {theoreticalData.map((value, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{value.toFixed(2)}</td>
+              <AnimatePresence mode="wait">
+                {editMode ? (
+                  <motion.div
+                    key="edit"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-4 gap-4 max-h-[400px] overflow-y-auto"
+                  >
+                    {theoreticalData.map((value, index) => (
+                      <div key={index}>
+                        <Label htmlFor={`data-${index}`}>Day {index + 1}</Label>
+                        <Input
+                          id={`data-${index}`}
+                          type="number"
+                          value={value}
+                          onChange={(e) => handleDataChange(index, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="view"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-[400px] overflow-y-auto"
+                  >
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th>Day</th>
+                          <th>Value</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {theoreticalData.map((value, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{Number(value).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </TabsContent>
         </Tabs>

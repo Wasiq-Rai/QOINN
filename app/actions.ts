@@ -26,9 +26,7 @@ interface Meeting {
 
 async function readData(): Promise<{ slots: Slot[], meetings: Meeting[] }> {
   try {
-    console.log(DATA_FILE)
     const data = await fs.readFile(DATA_FILE, 'utf8')
-    console.log(data)
     return JSON.parse(data)
   } catch (error) {
     return { slots: [], meetings: [] }
