@@ -1,0 +1,61 @@
+{
+  "slots": [
+    {
+      "id": "slot-1",
+      "datetime": "2024-01-01T10:00:00.000Z",
+      "isBooked": false
+    },
+    {
+      "id": "slot-2",
+      "datetime": "2024-01-01T11:00:00.000Z",
+      "isBooked": true
+    },
+    {
+      "id": "slot-3",
+      "datetime": "2024-01-01T12:00:00.000Z",
+      "isBooked": false
+    },
+    {
+      "id": "slot-4",
+      "datetime": "2024-01-01T13:00:00.000Z",
+      "isBooked": true
+    },
+    {
+      "id": "slot-5",
+      "datetime": "2024-01-01T14:00:00.000Z",
+      "isBooked": false
+    }
+  ],
+  "meetings": [
+    {
+      "id": "meeting-1",
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "123-456-7890",
+      "investmentAmount": 10000,
+      "message": "Hello, I'm interested in investing.",
+      "slotId": "slot-2",
+      "isApproved": false
+    },
+    {
+      "id": "meeting-2",
+      "name": "Jane Doe",
+      "email": "jane.doe@example.com",
+      "phone": "987-654-3210",
+      "investmentAmount": 5000,
+      "message": "Hi, I'd like to schedule a meeting.",
+      "slotId": "slot-4",
+      "isApproved": false
+    },
+    {
+      "id": "1737316152921",
+      "name": "Rai Wasiq Abdullah",
+      "email": "wasiqrai1122@gmail.com",
+      "phone": "03068852579",
+      "investmentAmount": 87,
+      "message": "",
+      "slotId": "2024-01-01T10:00:00.000Z",
+      "isApproved": false
+    }
+  ]
+}
