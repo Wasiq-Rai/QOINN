@@ -64,10 +64,15 @@ export const login = async (username: string, password: string) => {
     return response.data;
   };
   
-  export const getPerformanceData = async (model: string): Promise<ChartData> => {
-    const response = await api.get<ChartData>(`/performance/chart_data/?model=${model}`);
-    return response.data;
-  };
+  export const getPerformanceData = async (
+    model: string,
+    timeframe: string,
+  ): Promise<{ simulatedData: ChartData[]; realData: ChartData[] }> => {
+    const response = await api.get<{ simulatedData: ChartData[]; realData: ChartData[] }>(
+      `/performance/chart_data/?model=${model}&timeframe=${timeframe}`,
+    )
+    return response.data
+  }
 
   export const getPortfolioSummary = async (): Promise<PortfolioSummary> => {
     const response = await api.get<PortfolioSummary>('/portfolios/summary/');
