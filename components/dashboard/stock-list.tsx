@@ -23,7 +23,7 @@ export function StockList() {
         fetchData()
       }, [])
   return (
-    <div className="relative min-h-[400px] backdrop-blur-lg bg-black">
+    <div className="relative">
       <Table>
         <TableHeader>
           <TableRow>

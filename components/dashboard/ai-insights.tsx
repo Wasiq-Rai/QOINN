@@ -23,7 +23,7 @@ export function AIInsights() {
   }, [])
 
   return (
-    <div className="relative min-h-[450px]">
+    <div className="relative">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {insights.slice(0, isPremium ? insights.length : 1).map((insight) => (
           <Card key={insight.id}>

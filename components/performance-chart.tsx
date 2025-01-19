@@ -14,9 +14,8 @@ export function PerformanceChart() {
   useEffect(() => {
     const fetchPerformance = async () => {
       try {
-        // const data = await getPerformanceData();
-        // console.log(data)
-        // setPerformanceData(data); 
+        const data = await getPerformanceData();
+        // setPerformanceData(data); // Ensure data is an array of PerformanceData
       } catch (error) {
         console.error("Error fetching performance data:", error);
       }

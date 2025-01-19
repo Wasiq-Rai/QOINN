@@ -34,8 +34,8 @@ export function ContactForm() {
   }
 
   return (
-<Card className="max-w-lg mx-auto backdrop-blur-lg bg-gradient-to-br from-blue-100/50 via-blue-200/50 to-blue-300/50 rounded-lg shadow-lg p-8">
-<CardContent className="p-6">
+    <Card className="max-w-lg mx-auto">
+      <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>

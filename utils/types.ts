@@ -63,16 +63,6 @@ export interface LoginResponse {
     dates: string[]
     spy: number[]
     voo: number[]
-    model: number[]
-    model_version: string
+    qoinn_theoretical: number[]
+    qoinn_real: number[]
   }
-
-  export interface TickerData {
-    Open: number,
-    High: number,
-    Low: number,
-    Close: number,
-    Volume: number,
-    Dividends: number,
-  }
-  

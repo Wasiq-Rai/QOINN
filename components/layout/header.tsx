@@ -1,69 +1,36 @@
-import Link from "next/link";
-import Image from "next/image"; // Import the Image component for the logo
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import Link from 'next/link'
+import { Button } from "@/components/ui/button"
+import { ModeToggle } from "@/components/mode-toggle"
 
 export function Header() {
   return (
-<header className="sticky top-0 z-50 w-full border-b bg-[#3498db]/95 backdrop-blur-lg supports-[backdrop-filter]:bg-[#3498db]/80">      <div className="container flex h-16 items-center">
-        {/* Logo and Navigation */}
-        <div className="mr-4 flex items-center space-x-6">
-          <Link className="flex items-center space-x-2" href="/">
-            <Image
-              src="/logo-name.png"
-              alt="QOINN Logo"
-              width={200}
-              height={200}
-              className="rounded-full"
-            />
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link className="mr-6 flex items-center space-x-2" href="/">
+            <span className="hidden font-bold sm:inline-block">QOINN</span>
           </Link>
-        </div>
-        <div className="flex flex-2 items-center justify-end space-x-4">
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-700 dark:text-gray-300">
-            <Link
-              href="/#features"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              href="/#performance"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Performance
-            </Link>
-            <Link
-              href="/#investments"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Investments
-            </Link>
-            <Link
-              href="/#subscribe"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Subscribe
-            </Link>
-            <Link
-              href="/#team"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Team
-            </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link href="/#features">Features</Link>
+            <Link href="/#performance">Performance</Link>
+            <Link href="/#investments">Investments</Link>
+            <Link href="/#subscribe">Subscribe</Link>
+            <Link href="/#team">Team</Link>
           </nav>
         </div>
-
-        {/* Login, Signup, and Mode Toggle */}
-        <div className="flex flex-1 items-center justify-end space-x-4 pr-4">
-          <nav className="flex items-center space-x-4">
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center">
+            <Button variant="ghost" asChild className="mr-6">
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/signup">Sign up</Link>
+            </Button>
+            <ModeToggle />
           </nav>
         </div>
       </div>
     </header>
-  );
+  )
 }
+

@@ -13,8 +13,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "outDir": "build",
-    "typeRoots": ["node_modules/@types"],
     "plugins": [
       {
         "name": "next"
