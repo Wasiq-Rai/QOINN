@@ -13,7 +13,6 @@ export function StockList() {
         const fetchData = async () => {
 
           const stocksData = await getStocks()
-          console.log(stocksData)
           setStocks(stocksData)
     
           // TODO: Fetch user's premium status

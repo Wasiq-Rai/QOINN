@@ -67,8 +67,8 @@ export const login = async (username: string, password: string) => {
   export const getPerformanceData = async (
     model: string,
     timeframe: string,
-  ): Promise<{ simulatedData: ChartData[]; realData: ChartData[] }> => {
-    const response = await api.get<{ simulatedData: ChartData[]; realData: ChartData[] }>(
+  ): Promise<ChartData> => {
+    const response = await api.get<ChartData>(
       `/performance/chart_data/?model=${model}&timeframe=${timeframe}`,
     )
     return response.data

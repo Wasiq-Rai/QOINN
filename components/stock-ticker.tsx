@@ -24,7 +24,6 @@ export function StockTicker() {
         // Fetch prices for all stocks
         for (const stock of stocks) {
           const price = await fetchStockData(stock.symbol);
-          console.log(price)
           if (price !== null) {
             newPrices[stock.symbol] = price;
           }

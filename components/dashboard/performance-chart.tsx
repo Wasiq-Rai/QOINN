@@ -14,8 +14,20 @@ import { Upload, Edit2, RefreshCw } from "lucide-react"
 import { CombinedChart } from "./Charts/CombinedChart"
 
 export function PerformanceChart() {
-  const [simulatedData, setSimulatedData] = useState<ChartData[]>([])
-  const [realData, setRealData] = useState<ChartData[]>([])
+  const [simulatedData, setSimulatedData] = useState<ChartData>({
+    dates: [],
+    spy: [],
+    voo: [],
+    model: [],
+    model_version: "M15"
+  })
+  const [realData, setRealData] = useState<ChartData>({
+    dates: [],
+    spy: [],
+    voo: [],
+    model: [],
+    model_version: "M15"
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [activeModel, setActiveModel] = useState("M15")
   const [activeTimeframe, setActiveTimeframe] = useState("1d")
@@ -31,9 +43,9 @@ export function PerformanceChart() {
     setIsLoading(true)
     try {
       const response = await getPerformanceData(model, timeframe)
-      setSimulatedData(response.simulatedData)
-      setRealData(response.realData)
-      setTheoreticalData(response.simulatedData.map((item) => item.model).flat())
+      setSimulatedData(response)
+      setRealData(response)
+      setTheoreticalData(response.model.flat())
     } catch (error) {
       console.error("Error fetching performance data:", error)
     } finally {
@@ -75,12 +87,7 @@ export function PerformanceChart() {
   }
 
   const updateChartData = (newTheoreticalData: number[]) => {
-    setSimulatedData((prevData) =>
-      prevData.map((item, index) => ({
-        ...item,
-        Model: newTheoreticalData[index],
-      })),
-    )
+
   }
 
   const resetData = () => {
@@ -121,7 +128,7 @@ export function PerformanceChart() {
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select model" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="M15">M15</SelectItem>
                     <SelectItem value="M16">M16</SelectItem>
                     <SelectItem value="M17">M17</SelectItem>
@@ -131,7 +138,7 @@ export function PerformanceChart() {
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select timeframe" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="1m">1 Minute</SelectItem>
                     <SelectItem value="3m">3 Minutes</SelectItem>
                     <SelectItem value="5m">5 Minutes</SelectItem>
@@ -201,7 +208,7 @@ export function PerformanceChart() {
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="h-[400px] overflow-y-auto"
+                    className="max-h-[400px] overflow-y-auto"
                   >
                     <table className="w-full">
                       <thead>

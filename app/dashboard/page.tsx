@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
+import Faq from '../FAQs'
+import InfoCardSection from '@/components/InfoCard'
 
 export const metadata: Metadata = {
   title: 'QOINN Dashboard',
@@ -29,7 +31,7 @@ export default function DashboardPage() {
     <Layout>
       <HeroSection />
       <StockTicker />
-      <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-yale-blue">Your Dashboard</h1>
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-yale-blue">Performance Charts</h2>
@@ -37,6 +39,7 @@ export default function DashboardPage() {
           </div>
         <div className="space-y-8">
           <PortfolioSummary/>
+          <InfoCardSection/>
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-yale-blue">Top Stocks</h2>
             <StockList/>
@@ -105,6 +108,7 @@ export default function DashboardPage() {
 
         {/* Team Section */}
         <TeamSection />
+        <Faq/>
 
         {/* Newsletter Section */}
         <Newsletter />
