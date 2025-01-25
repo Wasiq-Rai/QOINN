@@ -14,7 +14,6 @@ export function StockList() {
     const fetchStocks = async () => {
       try {
         const fetchedStocks = await getStocks();
-        console.log(fetchedStocks);
         setStocks(fetchedStocks);
       } catch (error) {
         console.error("Error fetching stocks:", error);

@@ -67,6 +67,15 @@ export interface LoginResponse {
     model_version: string
   }
 
+  export interface ChartPointData {
+    date: string
+    spy: number
+    voo: number
+    model?: number
+    real?: number
+    model_version: string
+  }
+
   export interface TickerData {
     Open: number,
     High: number,
