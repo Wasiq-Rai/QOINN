@@ -59,21 +59,20 @@ export interface LoginResponse {
     isPremium: boolean
   }
 
-  export interface ChartData {
-    dates: string[]
-    spy: number[]
-    voo: number[]
-    model: number[]
-    model_version: string
+  export interface ChartDataPoint {
+    date: string;
+    SPY: number;
+    VOO: number;
+    Model: number;
   }
-
-  export interface ChartPointData {
-    date: string
-    spy: number
-    voo: number
-    model?: number
-    real?: number
-    model_version: string
+  
+  export interface ChartData {
+    dates: string[];
+    spy: number[];
+    voo: number[];
+    model: number[][];
+    model_version: string;
+    data_source?: string;
   }
 
   export interface TickerData {
