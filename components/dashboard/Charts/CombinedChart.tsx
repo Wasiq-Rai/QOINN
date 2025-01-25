@@ -42,16 +42,19 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
 export function CombinedPerformanceChart({ data }: CombinedChartProps) {
   // Process data to calculate percentage changes
   const processedData = useMemo(() => {
-    const initialSPY = data.spy[0];
-    const initialVOO = data.voo[0];
-    const initialModel = data.model[0][0];
 
     return data.dates.map((date, index) => ({
       date,
-      SPY: ((data.spy[index] / initialSPY - 1) * 100),
-      VOO: ((data.voo[index] / initialVOO - 1) * 100),
-      Model: ((data.model[0][index] / initialModel - 1) * 100)
+      SPY: data.spy[index],
+      VOO: data.voo[index],
+      Model: data.model[0][index]
     }));
+    // return data.dates.map((date, index) => ({
+    //   date,
+    //   SPY: ((data.spy[index] / initialSPY - 1) * 100),
+    //   VOO: ((data.voo[index] / initialVOO - 1) * 100),
+    //   Model: ((data.model[0][index] / initialModel - 1) * 100)
+    // }));
   }, [data]);
 
   return (
