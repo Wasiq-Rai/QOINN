@@ -96,6 +96,15 @@ export const fetchStockData = async (symbol: string): Promise<number> => {
     const response = await api.get<any>('/user-profiles/premium_status/');
     return response.data.is_premium;
   };
+
+  export const TIMELINE_CONFIGS = {
+    '2w': { period: '2w', label: '2 Weeks', expectedLength: 10 },
+    '1m': { period: '1mo', label: '1 Month', expectedLength: 21 },
+    '3m': { period: '3mo', label: '3 Months', expectedLength: 63 },
+    '6m': { period: '6mo', label: '6 Months', expectedLength: 126 },
+    '1y': { period: '1y', label: '1 Year', expectedLength: 252 },
+    '2y': { period: '2y', label: '2 Years', expectedLength: 510 }
+  };
   
   export default api;
   
