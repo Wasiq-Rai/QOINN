@@ -28,7 +28,6 @@ export function StockTicker() {
             newPrices[stock.symbol] = price;
           }
         }
-
         setPrices(newPrices);
       } catch (error) {
         console.error("Error fetching stock prices:", error);

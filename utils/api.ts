@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AIInsightsProps, ChartData, Insight, LoginResponse, PerformanceData, Portfolio, PortfolioSummary, RegisterResponse, Stock, TickerData } from './types';
+import { AIInsightsProps, ApiResponse, ChartData, Insight, LoginResponse, PerformanceData, Portfolio, PortfolioSummary, RegisterResponse, Stock, TickerData } from './types';
 const API_URL = 'http://localhost:8000/api';
 
 const api = axios.create({
@@ -40,8 +40,8 @@ export const login = async (username: string, password: string) => {
     return response.data;
   };  
   
-  export const getStocks = async (): Promise<Stock[]> => {
-    const response = await api.get<Stock[]>('/stocks/');
+  export const getStocks = async (): Promise<ApiResponse> => {
+    const response = await api.get<ApiResponse>('/stocks/fetch_current_value/?symbol=AAPL&symbol=GOOGL&symbol=TSLA');
     return response.data;
   };
   
@@ -76,7 +76,7 @@ export const login = async (username: string, password: string) => {
 
   export const getPortfolioSummary = async (): Promise<PortfolioSummary> => {
     const response = await api.get<PortfolioSummary>('/portfolios/summary/');
-    return response.data;
+    return response.data || null;
   };
 
 export const fetchStockData = async (symbol: string): Promise<number> => {
@@ -84,12 +84,12 @@ export const fetchStockData = async (symbol: string): Promise<number> => {
     if (!response) {
       throw new Error(`Failed to fetch data for ${symbol}`);
     }
-    return response.data.Close; 
+    return response.data.close; 
 };
 
   export const getAIInsights = async (): Promise<Insight[]> => {
     const response = await api.get<Insight[]>('/ai-insights/');
-    return response.data;
+    return response.data || null;
   };
   
   export const getUserPremiumStatus = async () => {

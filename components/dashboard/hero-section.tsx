@@ -6,7 +6,7 @@ const HeroSection = () => {
   return (
     <section className="relative h-[50vh] overflow-hidden">
       <video
-        className="absolute inset-0 w-full h-full object-cover blur-md"
+        className="absolute inset-0 w-full h-full object-cover"
         autoPlay
         loop
         muted
@@ -17,7 +17,7 @@ const HeroSection = () => {
       </video>
       <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+          <h1 className="font-flek text-4xl md:text-6xl font-bold text-white bg-black p-1  mb-4">
             <Typewriter
               options={{
                 strings: ['Welcome to QOINN', 'Your AI-powered investment platform'],

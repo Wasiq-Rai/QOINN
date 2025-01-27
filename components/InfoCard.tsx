@@ -47,7 +47,7 @@ const InfoCardSection = () => {
         <Image src="/img/bg/whirl.svg" fill className="absolute object-cover w-full overflow-visible sm:rotate-90" alt="Background Whirl" />
       </div>
       <div className="w-full z-1  h-full flex items-center justify-center flex-col gap-8 max-w-7xl">
-        <h3 className='text-4xl md:text-5xl font-bold'>No More Time Wasted!</h3>
+        <h3 className='text-4xl z-10 md:text-5xl font-bold'>No More Time Wasted!</h3>
         <div id="carousel" className="carousel w-full flex gap-4 overflow-hidden snap-x snap-mandatory relative">
           {infoCards.map((infoCard) => (
             <InfoCard key={infoCard.id} Icon={infoCard.icon} title={infoCard.title}>

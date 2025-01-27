@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import SingleFaq from "./faq";
 import GetInTouch from "./getInTouch";
 import { Faqs } from "./faqs";
-import Image from 'next/image';
+import Image from "next/image";
 
 const Faq = () => {
   const [faqs, setFaqs] = useState(Faqs);
@@ -24,22 +24,22 @@ const Faq = () => {
           </h1>
           <p className="text-[13px] md:text-md leading-normal font-light w-[95%] md:w-[100%] opacity-80">
             Here are some of the most frequently asked questions <br /> about
-            our trading bot and prediction project.
+            our QOINN Model.
           </p>
           <GetInTouch />
-		  <div className="relative w-full  h-auto flex justify-center items-center">
-          <Image
-            unoptimized
-            quality={100}
-            width={100}
-            height={100}
-            src="/logo-name.png"
-            alt=""
-            className="w-full h-auto rounded-lg shadow-lg mt-4 "
-          />
+          <div className="relative w-full  h-auto flex justify-center items-center">
+            <Image
+              unoptimized
+              quality={100}
+              width={100}
+              height={100}
+              src="/logo-name.png"
+              alt=""
+              className="w-full h-auto rounded-lg shadow-lg mt-4 "
+            />
+          </div>
         </div>
-        </div>
-        
+
         <div className="flex flex-col gap-3 w-full lg:w-[36rem]">
           {faqs.map((faq, index) => (
             <SingleFaq

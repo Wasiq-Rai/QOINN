@@ -9,6 +9,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+import { PremiumProvider } from '@/context/PremiumContext'
 
 export const metadata: Metadata = {
   title: 'Qoinn',
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     
     <ClerkProvider>
+    <PremiumProvider>
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
@@ -32,6 +34,7 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+    </PremiumProvider>
     </ClerkProvider>
   )
 }

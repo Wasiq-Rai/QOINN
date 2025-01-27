@@ -3,7 +3,7 @@
     {
       "id": "slot-1",
       "datetime": "2024-01-01T10:00:00.000Z",
-      "isBooked": false
+      "isBooked": true
     },
     {
       "id": "slot-2",
@@ -53,6 +53,16 @@
       "email": "wasiqrai1122@gmail.com",
       "phone": "03068852579",
       "investmentAmount": 87,
+      "message": "",
+      "slotId": "2024-01-01T10:00:00.000Z",
+      "isApproved": false
+    },
+    {
+      "id": "1737920730932",
+      "name": "Rai Wasiq Abdullah",
+      "email": "wasiqrai1122@gmail.com",
+      "phone": "03068852579",
+      "investmentAmount": 100,
       "message": "",
       "slotId": "2024-01-01T10:00:00.000Z",
       "isApproved": false

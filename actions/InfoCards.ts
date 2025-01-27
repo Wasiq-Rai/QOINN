@@ -1,4 +1,4 @@
-import { AlarmClockOff, ArrowDownNarrowWide, ArrowUpNarrowWide, TrendingUp, TrendingDown, UserCheck, BarChart2, ShieldCheck, Clock, Settings , LucideIcon} from "lucide-react";
+import { TrendingUp, BarChart2, ShieldCheck, Clock, UserCheck, Settings, ArrowUpRight, ArrowDownRight, LineChart, TrendingDown, LucideIcon } from "lucide-react";
 
 interface IInfoCard {
     title: string;
@@ -9,63 +9,63 @@ interface IInfoCard {
 
 const infoCards: IInfoCard[] = [
     {
-        title: "Increased Sales",
-        bodyText: "Insightful's predictive analytics identify high-value prospects for targeted pitches, boosting conversion rates and sales by up to 20%.",
-        icon: ArrowUpNarrowWide,
+        title: "Higher Returns",
+        bodyText: "QOINN's model aims for consistent, optimized portfolio growth.",
+        icon: TrendingUp,
         id: 1
     },
     {
-        title: "No Time Wasted",
-        bodyText: "Insightful automates personalized content creation, freeing up sales reps' time for revenue-focused activities and increased productivity.",
-        icon: AlarmClockOff,
+        title: "Daily Updates",
+        bodyText: "Track theoretical and real values of QOINN effortlessly.",
+        icon: Clock,
         id: 2
     },
     {
-        title: "Decreased Churn",
-        bodyText: "Insightful's AI lead engagement and renewal tools reduce customer churn by up to 30% through consistent outreach and retention opportunities.",
-        icon: ArrowDownNarrowWide,
+        title: "Risk Control",
+        bodyText: "Mitigate investment risks with our smart allocation strategies.",
+        icon: ShieldCheck,
         id: 3
     },
     {
-        title: "Optimized Trading",
-        bodyText: "Our trading bot uses advanced algorithms to optimize trade entries and exits, maximizing your profits with minimal risk.",
-        icon: TrendingUp,
+        title: "Stock Insights",
+        bodyText: "See which stocks QOINN favors with scoring metrics.",
+        icon: BarChart2,
         id: 4
     },
     {
-        title: "Risk Management",
-        bodyText: "Automated risk management features protect your investments by setting stop-loss and take-profit levels tailored to your risk tolerance.",
-        icon: ShieldCheck,
+        title: "Subscription Plan",
+        bodyText: "Unlock exclusive access to QOINN's investment strategy.",
+        icon: UserCheck,
         id: 5
     },
     {
-        title: "Real-time Analytics",
-        bodyText: "Get real-time market data and analytics to make informed trading decisions and stay ahead of market trends.",
-        icon: BarChart2,
+        title: "Performance View",
+        bodyText: "Compare QOINN's performance with VOO and SPY.",
+        icon: LineChart,
         id: 6
     },
     {
-        title: "24/7 Trading",
-        bodyText: "Our bot operates 24/7, ensuring you never miss a trading opportunity, even when you're offline or asleep.",
-        icon: Clock,
+        title: "Smart Investing",
+        bodyText: "Make informed decisions with our strategic insights.",
+        icon: Settings,
         id: 7
     },
     {
-        title: "User-Friendly Interface",
-        bodyText: "Designed with the user in mind, our interface is intuitive and easy to navigate, making trading accessible for everyone.",
-        icon: UserCheck,
+        title: "Growth Potential",
+        bodyText: "Evaluate past performance to shape future investments.",
+        icon: ArrowUpRight,
         id: 8
     },
     {
-        title: "Customizable Strategies",
-        bodyText: "Tailor the bot's trading strategies to match your personal trading style and preferences, ensuring optimal performance.",
-        icon: Settings,
+        title: "Market Trends",
+        bodyText: "Stay updated with the latest financial market shifts.",
+        icon: TrendingDown,
         id: 9
     },
     {
-        title: "Market Insights",
-        bodyText: "Gain access to exclusive market insights and forecasts, helping you make more informed trading decisions.",
-        icon: TrendingDown,
+        title: "Investment Stats",
+        bodyText: "Analyze real vs. theoretical trading for better insights.",
+        icon: ArrowDownRight,
         id: 10
     },
 ]
