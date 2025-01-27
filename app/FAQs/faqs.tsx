@@ -1,63 +1,62 @@
 export const Faqs = [
-    {
-      id: 1,
-      question: "What stocks do your predictions cover?",
-      answer: "Our predictions cover the following stocks: AAPL, AMZN, GOOG, TSLA, and MSFT.",
-      active: true,
-    },
-    {
-      id: 2,
-      question: "What timeframes are available for predictions?",
-      answer: "We provide predictions for two timeframes: 5 days and 75 minutes with intervals of 5 minutes.",
-      active: false,
-    },
-    {
-      id: 3,
-      question: "What data is displayed on the charts?",
-      answer: "The left chart displays the last 10 days or last 150 minutes' price of the selected stock, while the right chart shows the next predictions respectively.",
-      active: false,
-    },
-    {
-      id: 4,
-      question: "How accurate are your predictions?",
-      answer: "Our models are trained with utmost accuracy and backed by extensive research and effort to provide the most reliable predictions possible.",
-      active: false,
-    },
-    {
-      id: 5,
-      question: "Why does loading take time?",
-      answer: "Loading can take some time due to the complexity of our prediction algorithms and the amount of data processed. We ensure it's worth the wait for accurate predictions.",
-      active: false,
-    },
-    {
-      id: 6,
-      question: "How can I view the current market status?",
-      answer: "You can view the status of the market by opening the sidebar from the button on the right sidebar.",
-      active: false,
-    },
-    {
-      id: 7,
-      question: "Can I use the prediction service for day trading?",
-      answer: "Yes, our 75-minute predictions with 5-minute intervals are ideal for day trading.",
-      active: false,
-    },
-    {
-      id: 8,
-      question: "How often are the prediction models updated?",
-      answer: "Our prediction models are regularly updated to incorporate the latest data and improve accuracy.",
-      active: false,
-    },
-    {
-      id: 9,
-      question: "Is there a mobile app for your prediction service?",
-      answer: "Currently, our prediction service is accessible via web application. We are working on a mobile app to enhance user convenience.",
-      active: false,
-    },
-    {
-      id: 10,
-      question: "What makes your prediction service unique?",
-      answer: "Our prediction service is unique due to its high accuracy, extensive research, and detailed interval predictions for both short and long-term timeframes.",
-      active: false,
-    },
-  ];
-  
+  {
+    id: 1,
+    question: "What stocks does QOINN invest in?",
+    answer: "QOINN invests in a diversified portfolio, including top-performing stocks such as AAPL, MSFT, and NVDA based on our scoring system.",
+    active: true,
+  },
+  {
+    id: 2,
+    question: "How often is data updated?",
+    answer: "We update QOINN's theoretical and real trading data daily to ensure the most up-to-date insights.",
+    active: false,
+  },
+  {
+    id: 3,
+    question: "What timeframes are available for performance review?",
+    answer: "You can review performance across various timeframes: 1 week, 1 month, 3 months, 6 months, 1 year, and 3 years.",
+    active: false,
+  },
+  {
+    id: 4,
+    question: "How accurate is QOINN's performance?",
+    answer: "QOINN's model is built with precision and data-driven insights to optimize investment decisions with minimal risk.",
+    active: false,
+  },
+  {
+    id: 5,
+    question: "How do I invest in QOINN?",
+    answer: "You can contact us through the 'Investing' section to discuss offline investment options and future plans.",
+    active: false,
+  },
+  {
+    id: 6,
+    question: "What do I get with a subscription?",
+    answer: "Subscribers gain access to QOINN's investment portfolio and stock scores, helping them make informed investment decisions.",
+    active: false,
+  },
+  {
+    id: 7,
+    question: "Can I track QOINN's real vs theoretical performance?",
+    answer: "Yes, our platform allows you to compare real and theoretical values across different timeframes.",
+    active: false,
+  },
+  {
+    id: 8,
+    question: "Is the data entry manual or automatic?",
+    answer: "We offer manual data entry through an admin dashboard, with potential for automation in the future.",
+    active: false,
+  },
+  {
+    id: 9,
+    question: "Will there be a mobile app?",
+    answer: "Currently, QOINN is accessible via web application. A mobile app is under consideration for future development.",
+    active: false,
+  },
+  {
+    id: 10,
+    question: "What makes QOINN unique?",
+    answer: "QOINN offers a unique scoring system to assess investment opportunities and an easy-to-use platform for tracking performance.",
+    active: false,
+  },
+];

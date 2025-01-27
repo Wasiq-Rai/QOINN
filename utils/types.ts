@@ -10,13 +10,13 @@ export interface LoginResponse {
   }
   
   export interface Stock {
-    symbol: string
-    name: string
-    quantity: number
-    purchase_price: number
-    current_price: number
-    previous_close: number
-    change: number
+    Close: number,
+    Dividends: number,
+    High: number,
+    Low:  number,
+    Open: number,
+    StockSplits:number,
+    Volume: number
   }
   
   export interface Portfolio {
@@ -79,8 +79,13 @@ export interface LoginResponse {
     Open: number,
     High: number,
     Low: number,
-    Close: number,
+    close: number,
     Volume: number,
     Dividends: number,
   }
   
+  
+  export interface ApiResponse {
+    results: {},
+    errors: {}
+  }

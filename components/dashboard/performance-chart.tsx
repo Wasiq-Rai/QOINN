@@ -37,12 +37,7 @@ import {
 import { getPerformanceData, TIMELINE_CONFIGS } from "@/utils/api";
 import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: any[];
-  label: string | Date;
-}
+import PerformanceSummary from "./performance-summary";
 
 export function PerformanceChart() {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
@@ -111,22 +106,20 @@ export function PerformanceChart() {
     }
   };
 
-   // File upload handler
-   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // File upload handler
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log(file)
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         const uploadedData = content
-        .split(/[,\s]+/) // Split by commas or spaces
-        .map((value) => parseFloat(value)) // Convert to numbers
-        .filter((value) => !isNaN(value)); // Filter out invalid numbers
-        console.log(uploadedData.length)
-        
+          .split(/[,\s]+/) // Split by commas or spaces
+          .map((value) => parseFloat(value)) // Convert to numbers
+          .filter((value) => !isNaN(value)); // Filter out invalid numbers
+
         const config = Object.values(TIMELINE_CONFIGS).find(
-          cfg => cfg.expectedLength === uploadedData.length
+          (cfg) => cfg.expectedLength === uploadedData.length
         );
 
         if (config) {
@@ -134,7 +127,7 @@ export function PerformanceChart() {
           if (simulatedData) {
             const updatedChartData: ChartData = {
               ...simulatedData,
-              model: [uploadedData]
+              model: [uploadedData],
             };
             setSimulatedData(updatedChartData);
           }
@@ -172,7 +165,7 @@ export function PerformanceChart() {
               <IconButton onClick={() => setEditMode(!editMode)}>
                 <EditIcon />
               </IconButton>
-              <FileUploadButton handleFileUpload={handleFileUpload}/>
+              <FileUploadButton handleFileUpload={handleFileUpload} />
             </Box>
           )}
         </Box>
@@ -253,65 +246,80 @@ export function PerformanceChart() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Box display="flex" gap={2} mb={2}>
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Model</InputLabel>
-              <Select
-                value={activeModel}
-                onChange={(e) => setActiveModel(e.target.value as string)}
-                label="Model"
+    <>
+      <PerformanceSummary modelData={simulatedModelData} dataType={dataType} />
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Box display="flex" gap={2} mb={2}>
+              <FormControl
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 120 }}
               >
-                {["M15", "M16", "M17"].map((model) => (
-                  <MenuItem key={model} value={model}>
-                    {model}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <InputLabel>Model</InputLabel>
+                <Select
+                  value={activeModel}
+                  onChange={(e) => setActiveModel(e.target.value as string)}
+                  label="Model"
+                >
+                  {["M15", "M16", "M17"].map((model) => (
+                    <MenuItem key={model} value={model}>
+                      {model}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Timeline</InputLabel>
-              <Select
-                value={activeTimeline}
-                onChange={(e) => setActiveTimeline(e.target.value as string)}
-                label="Timeline"
+              <FormControl
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 120 }}
               >
-                {Object.entries(TIMELINE_CONFIGS).map(([key, config]) => (
-                  <MenuItem key={key} value={key}>
-                    {config.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <InputLabel>Timeline</InputLabel>
+                <Select
+                  value={activeTimeline}
+                  onChange={(e) => setActiveTimeline(e.target.value as string)}
+                  label="Timeline"
+                >
+                  {Object.entries(TIMELINE_CONFIGS).map(([key, config]) => (
+                    <MenuItem key={key} value={key}>
+                      {config.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Data Type</InputLabel>
-              <Select
-                value={dataType}
-                onChange={(e) =>
-                  setDataType(e.target.value as "percentage" | "absolute")
-                }
-                label="Data Type"
+              <FormControl
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 120 }}
               >
-                <MenuItem value="percentage">Percentage</MenuItem>
-                <MenuItem value="absolute">Absolute</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Grid>
+                <InputLabel>Data Type</InputLabel>
+                <Select
+                  value={dataType}
+                  onChange={(e) =>
+                    setDataType(e.target.value as "percentage" | "absolute")
+                  }
+                  label="Data Type"
+                >
+                  <MenuItem value="percentage">Percentage</MenuItem>
+                  <MenuItem value="absolute">Absolute</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Grid>
 
-        <Grid item xs={12}>
-          {simulatedData && renderPerformanceChart(simulatedData, true)}
-        </Grid>
+          <Grid item xs={12}>
+            {simulatedData && renderPerformanceChart(simulatedData, true)}
+          </Grid>
 
-        <Grid item xs={12}>
-          {realData && renderPerformanceChart(realData)}
+          <Grid item xs={12}>
+            {realData && renderPerformanceChart(realData)}
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </>
   );
 }
 

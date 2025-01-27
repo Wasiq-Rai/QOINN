@@ -4,7 +4,8 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 export function Header() {
   return (
-<header className="sticky top-0 z-50 w-full border-b bg-[#3498db]/95 backdrop-blur-lg supports-[backdrop-filter]:bg-[#3498db]/80">      <div className="container flex h-16 items-center">
+<header className="sticky top-0 z-50 w-full border-b bg-[#6eabf0]">
+        <div className="container flex h-16 items-center">
         {/* Logo and Navigation */}
         <div className="mr-4 flex items-center space-x-6">
           <Link className="flex items-center space-x-2" href="/">
