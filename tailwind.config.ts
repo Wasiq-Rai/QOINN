@@ -14,7 +14,9 @@ const config: Config = {
   	extend: {
 		fontFamily: {
 			flek: ['Foundry Flek', 'sans-serif'],
+			kigelia: ['kigelia-lgc', 'sans-serif']
 		  },
+
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

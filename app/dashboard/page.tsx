@@ -21,6 +21,7 @@ import InfoCardSection from "@/components/InfoCard";
 import TradingViewWidget from "@/components/dashboard/Charts/TradingViewWidget";
 import SiteMetricsDashboard from "../visitors/SiteMetricsDashboard";
 import SubscriptionForm from "../subscription/subscription-form";
+import { usePremium } from "@/context/PremiumContext";
 
 export const metadata: Metadata = {
   title: "QOINN Dashboard",
