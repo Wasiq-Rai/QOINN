@@ -171,7 +171,7 @@ export function PerformanceChart() {
         </Box>
 
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={processedData}>
+        <LineChart data={processedData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
@@ -183,27 +183,29 @@ export function PerformanceChart() {
                   ? `${tick.toFixed(0)}%`
                   : tick.toFixed(2)
               }
+              width={80} // Increased width for better visibility
+              padding={{ top: 10, bottom: 10 }} // Added padding
             />
             <Tooltip />
             <Legend />
             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
             <Line
-              type="monotone"
+              type="monotone" // Changed to monotone for smoother line
               dataKey="Model"
               stroke="#ff7300"
-              strokeWidth={2}
+              strokeWidth={3} // Increased stroke width
             />
             <Line
               type="monotone"
               dataKey="SPY"
               stroke="#8884d8"
-              strokeWidth={2}
+              strokeWidth={3} // Increased stroke width
             />
             <Line
               type="monotone"
               dataKey="VOO"
               stroke="#82ca9d"
-              strokeWidth={2}
+              strokeWidth={3} // Increased stroke width
             />
           </LineChart>
         </ResponsiveContainer>
