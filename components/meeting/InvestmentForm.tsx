@@ -168,7 +168,7 @@ export default function InvestmentForm() {
               Schedule Meeting
             </Button>
             <img 
-                  src="/logo-name.png" 
+                  src="/img/logo/logo-name.png" 
                   alt="QOINN Logo" 
                   style={{ maxWidth: 250, marginBottom: 16, paddingTop: "20px" }}
                 />

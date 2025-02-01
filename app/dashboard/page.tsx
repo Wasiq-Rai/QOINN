@@ -36,7 +36,7 @@ export default function DashboardPage() {
       <div className="mx-auto">
         <div>
           <h1 className="mb-4 text-3xl text-center pt-2 font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-            <span className="text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+            <span className="font-kigelia text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
               Performance Charts
             </span>
           </h1>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-wrap justify-center mb-8">
               <img
-                src="/logo-name.png"
+                src="/img/logo/logo-with-name.png"
                 alt="QOINN Logo"
                 className=" h-20 md:h-32 mb-4 md:mb-0"
               />

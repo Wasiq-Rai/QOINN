@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Foundry Flek';
-  src: url('/fonts/FoundryFlek.woff2') format('woff2'),
-       url('/fonts/FoundryFlek.woff') format('woff'),
-       url('/fonts/FoundryFlek.ttf') format('truetype');
+  font-family: 'Kigelia';
+  src: url('../public/fonts/KigeliaArabic-Bold.woff2') format('woff2'),
+      url('../public/fonts/KigeliaArabic-Bold.woff') format('woff'),
+      url('../public/fonts/KigeliaArabic-Bold.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
-
 body {
-  font-family: 'Foundry Flek', sans-serif;
+  font-family: 'Kigelia', sans-serif;
 }
 
 @layer utilities {

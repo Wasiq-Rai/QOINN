@@ -26,7 +26,7 @@ export default function InvestPage() {
       }}
     >
       <img
-        src="/logo-name.png"
+        src="/img/logo/logo-name.png"
         alt="QOINN Logo"
         style={{ maxWidth: 250, marginBottom: 16, justifySelf: "center" }}
       />

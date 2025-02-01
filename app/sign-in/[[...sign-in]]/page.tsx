@@ -2,6 +2,7 @@
 import { SignIn } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
+import Image from "next/image";
 
 interface Star {
   x: number;
@@ -93,7 +94,13 @@ const Stars = () => {
 const SignInPage = () => {
   return (
     <main className="flex items-center justify-evenly h-screen bg-gradient-to-r from-blue-500 to-purple-500">
-      <Stars />
+      {/* <Stars /> */}
+      <Image
+                    src="/img/logo/logo-with-name.png"
+                    alt="QOINN Logo"
+                    width={300}
+                    height={300}
+                  />
       <div className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-12">
         <div className="text-4xl font-bold text-white">
           <span>Sign In</span>
