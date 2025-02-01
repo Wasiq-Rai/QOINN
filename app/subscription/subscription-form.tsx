@@ -4,6 +4,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./checkout-form";
 import { usePremium } from "@/context/PremiumContext";
+import { useUser } from "@clerk/nextjs";
 
 // Load your Stripe public key
 const stripePromise = loadStripe(
@@ -20,6 +21,8 @@ const SubscriptionForm = () => {
     localStorage.setItem("isPremium", "true");
     checkPremiumStatus(); // Call the function from context to re-evaluate
   };
+  const { isSignedIn, user, isLoaded } = useUser();
+
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
