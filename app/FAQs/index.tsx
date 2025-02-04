@@ -33,7 +33,7 @@ const Faq = () => {
               quality={100}
               width={100}
               height={100}
-              src="/logo-name.png"
+              src="/img/logo/logo-name-white.png"
               alt=""
               className="w-full h-auto rounded-lg shadow-lg mt-4 "
             />

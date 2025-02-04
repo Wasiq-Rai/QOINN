@@ -14,14 +14,11 @@ import { Testimonials } from "@/components/testimonials";
 import { NewsSection } from "@/components/news-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Faq from "../FAQs";
 import InfoCardSection from "@/components/InfoCard";
-import TradingViewWidget from "@/components/dashboard/Charts/TradingViewWidget";
 import SiteMetricsDashboard from "../visitors/SiteMetricsDashboard";
-import SubscriptionForm from "../subscription/subscription-form";
-import { usePremium } from "@/context/PremiumContext";
+import  { QoinnExplainer } from "../qoinn-detail/page";
 
 export const metadata: Metadata = {
   title: "QOINN Dashboard",
@@ -43,13 +40,11 @@ export default function DashboardPage() {
 
           <PerformanceChart />
         </div>
+        <QoinnExplainer/>
         <div className="space-y-8">
           {/* <PortfolioSummary /> */}
           <InfoCardSection />
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              Top Stocks
-            </h2>
             <StockList />
           </div>
           {/* <div>
@@ -71,32 +66,11 @@ export default function DashboardPage() {
             <StockList />
           </div>
         </section> */}
-
-        {/* Subscription Section */}
-        <section id="subscribe" className="py-12 bg-background">
-          <div className="container px-4 md:px-6">
-            <div className="max-w-sm mx-auto">
-              <Card>
-                <CardContent className="pt-6 bg-white/50 border-2">
-                  <div className="text-center space-y-4">
-                    <div className="container mx-auto py-10 text-center">
-                      <h1 className="text-3xl font-bold">
-                        Welcome to Premium Stocks
-                      </h1>
-                      <SubscriptionForm />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
         {/* News Section */}
         <NewsSection />
 
         {/* Testimonials Section */}
-        <Testimonials />
+        {/* <Testimonials /> */}
 
         {/* Contact Section */}
         <section className="py-12 bg-white" id="contact">

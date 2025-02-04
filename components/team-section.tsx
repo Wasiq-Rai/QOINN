@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
+import { Typography } from "@mui/material"
 import Image from "next/image"
 
 const team = [
@@ -30,6 +31,11 @@ const team = [
 
 export function TeamSection() {
   return (
+    <>
+    
+    <Typography variant="h4" textAlign={"center"} my={4} color="#2d2b2a" gutterBottom className='font-kigelia'>
+        Our Team
+      </Typography>
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {team.map((member) => (
         <Card key={member.name}>
@@ -48,6 +54,7 @@ export function TeamSection() {
         </Card>
       ))}
     </div>
+    </>
   )
 }
 

@@ -33,7 +33,7 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
 
   return (
     <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h5" gutterBottom className='font-kigelia'>
         Model Performance Summary
       </Typography>
       <Grid container spacing={2}>

@@ -1,13 +1,19 @@
-'use client'
+"use client";
 import Link from "next/link";
 import Image from "next/image"; // Import the Image component for the logo
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
 
 export function Header() {
   const { isSignedIn, user, isLoaded } = useUser();
   return (
-<header className="sticky top-0 z-50 w-full border-b bg-[#6eabf0]">
-        <div className="container flex h-16 items-center">
+    <header className="sticky top-0 z-50 w-full border-b bg-[#c2d6df]">
+      <div className="container flex h-16 items-center">
         {/* Logo and Navigation */}
         <div className="mr-4 flex items-center space-x-6">
           <Link className="flex items-center space-x-2" href="/">
@@ -65,14 +71,16 @@ export function Header() {
         {/* Login, Signup, and Mode Toggle */}
         <div className="flex flex-1 items-center justify-end space-x-4 pr-4">
           <nav className="flex items-center space-x-4">
-            <SignedOut >
+            <SignedOut>
               <SignInButton />
             </SignedOut>
             <SignedIn>
               {isSignedIn && (
-                <span>{user.firstName}</span>
+                <Link href={"/UserProfile"}>
+                  <span>{user.fullName}</span>
+                </Link>
               )}
-              <UserButton afterSignOutUrl='/sign-in' />
+              <UserButton afterSignOutUrl="/sign-in" />
             </SignedIn>
           </nav>
         </div>

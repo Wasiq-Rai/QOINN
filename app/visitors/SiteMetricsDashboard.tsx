@@ -41,7 +41,7 @@ const SiteMetricsDashboard: React.FC<SiteMetricsDashboardProps> = ({
         sx={{ 
           mb: 3, 
           fontWeight: 'bold', 
-          color: 'primary.dark',
+          color: '#2e5f7d',
           textAlign: 'center'
         }}
       >
@@ -128,7 +128,7 @@ const SiteMetricsDashboard: React.FC<SiteMetricsDashboardProps> = ({
                     Total Investments
                   </Typography>
                   <Typography variant="h4" fontWeight="bold">
-                    {totalInvestments.toLocaleString()}
+                    ${totalInvestments.toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Investment Conversion: {investmentConversionRate}%

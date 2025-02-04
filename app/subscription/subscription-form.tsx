@@ -35,7 +35,7 @@ const SubscriptionForm = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: user?.primaryEmailAddress?.toString(),
         }
       );
 
@@ -65,14 +65,6 @@ const SubscriptionForm = () => {
         <li>✓ Exclusive market insights</li>
       </ul>{" "}
       <form onSubmit={handleSubscribe} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md"
-          required
-        />
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-2 rounded-md"
