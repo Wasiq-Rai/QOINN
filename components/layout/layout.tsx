@@ -1,17 +1,14 @@
-import { Header } from './header'
+import { Header } from "./header";
 
 interface LayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
   return (
-<div className="min-h-screen bg-[#cee3fa]">
-<Header />
-      <main>
-        {children}
-      </main>
+    <div className="min-h-screen bg-[#e4edf1]">
+      <Header />
+      <main>{children}</main>
     </div>
-  )
+  );
 }
-

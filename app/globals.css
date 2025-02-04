@@ -134,3 +134,19 @@ body {
       width: 100%;
     }
   }
+
+  .MuiFormLabel-root, .MuiSelect-select, .MuiTypography-root, h1, h2, h3, h4, h5, h6, p, span, div {
+    font-family: 'Kigelia', 'sans-serif';
+  }
+
+  .tradingview-widget-container {
+    position: relative;
+    margin-top: 1rem;
+    min-height: 400px;
+  }
+  
+  @media (max-width: 768px) {
+    .tradingview-widget-container {
+      min-height: 300px;
+    }
+  }

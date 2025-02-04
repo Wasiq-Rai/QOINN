@@ -74,18 +74,42 @@ export interface LoginResponse {
     model_version: string;
     data_source?: string;
   }
-
-  export interface TickerData {
-    Open: number,
-    High: number,
-    Low: number,
-    close: number,
-    Volume: number,
-    Dividends: number,
-  }
-  
   
   export interface ApiResponse {
     results: {},
     errors: {}
   }
+
+  // Interface for stock data
+  export interface StockData {
+    symbol: string;
+    name: string;
+    price: number;
+    changePercent: number;
+  }
+  
+  // Interface for indicator data
+  export interface IndicatorData {
+    symbol: string;
+    name: string;
+    price: number;
+    changePercent: number;
+  }
+  
+  // Interface for API response
+  export interface TickerData {
+    close: number;
+    changePercent?: number;
+  }
+
+  export type StockSymbol = {
+    symbol: string;
+    name: string;
+  };
+
+  export const indicators = [
+    { symbol: "^GSPC", name: "S&P 500" },
+    { symbol: "^IXIC", name: "NASDAQ" },
+    { symbol: "^DJI", name: "Dow Jones" },
+    { symbol: "^TNX", name: "US 10-Year Yield" },
+  ];

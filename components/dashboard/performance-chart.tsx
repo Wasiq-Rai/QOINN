@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   LineChart,
   Line,
@@ -32,12 +32,20 @@ import {
   Edit as EditIcon,
   UploadFile as UploadIcon,
   Refresh as RefreshIcon,
+  Fullscreen,
+  Download,
 } from "@mui/icons-material";
 
 import { getPerformanceData, TIMELINE_CONFIGS } from "@/utils/api";
 import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
+
+const LINE_COLORS = {
+  MODEL: "#1976d2",    // Blue
+  SPY: "#2e7d32",      // Dark Green
+  VOO: "#ffa726"       // Orange
+};
 
 export function PerformanceChart() {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
@@ -49,6 +57,10 @@ export function PerformanceChart() {
   const [dataType, setDataType] = useState<"percentage" | "absolute">(
     "percentage"
   );
+  const simulatedChartRef = useRef<HTMLDivElement>(null);
+  const realChartRef = useRef<HTMLDivElement>(null);
+  const [fullscreenChart, setFullscreenChart] = useState<"simulated" | "real" | null>(null);
+
 
   // Fetch performance data
   const fetchData = async (model: string, timeline: string) => {
@@ -71,25 +83,74 @@ export function PerformanceChart() {
   const processChartData = (data: ChartData, isPercentage: boolean) => {
     if (!data) return [];
 
-    const initialValues = {
-      spy: data.spy[0],
-      voo: data.voo[0],
-      model: data.model[0][0],
-    };
+    // Calculate min/max values for normalization
+    const allSpyVooValues = [...data.spy, ...data.voo];
+    const minValue = Math.min(...allSpyVooValues) ;
+    const maxValue = Math.max(...allSpyVooValues);
+    const modelValues = data.model[0];
+
+    // Normalize model data to SPY/VOO range
+    const normalizedModel = modelValues.map(value => {
+      return ((value - Math.min(...modelValues)) / 
+             (Math.max(...modelValues) - Math.min(...modelValues))) *
+             (maxValue - minValue) + minValue;
+    });
 
     return data.dates.map((date, index) => ({
       date,
       SPY: isPercentage
-        ? (data.spy[index] / initialValues.spy - 1) * 100
+        ? (data.spy[index] / data.spy[0] - 1) * 100
         : data.spy[index],
       VOO: isPercentage
-        ? (data.voo[index] / initialValues.voo - 1) * 100
+        ? (data.voo[index] / data.voo[0] - 1) * 100
         : data.voo[index],
       Model: isPercentage
-        ? (data.model[0][index] / initialValues.model - 1) * 100
-        : data.model[0][index],
+        ? (modelValues[index] / modelValues[0] - 1) * 100
+        : normalizedModel[index],
     }));
   };
+
+    // Toggle fullscreen
+  const toggleFullscreen = (chart: "simulated" | "real") => {
+    const element = chart === "simulated" 
+      ? simulatedChartRef.current 
+      : realChartRef.current;
+    
+    if (element) {
+      if (fullscreenChart === chart) {
+        document.exitFullscreen();
+        setFullscreenChart(null);
+      } else {
+        element.requestFullscreen();
+        setFullscreenChart(chart);
+      }
+    }
+  };
+
+  // Download chart
+  const downloadChart = (chart: "simulated" | "real") => {
+    const container = chart === "simulated" 
+      ? simulatedChartRef.current 
+      : realChartRef.current;
+    
+    if (container) {
+      const svg = container.querySelector("svg");
+      if (svg) {
+        const serializer = new XMLSerializer();
+        const source = serializer.serializeToString(svg);
+        const blob = new Blob([source], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${chart}-chart.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+  };
+
 
   // Handle data editing
   const handleDataEdit = (index: number, value: string) => {
@@ -142,11 +203,12 @@ export function PerformanceChart() {
   // Render performance chart
   const renderPerformanceChart = (
     chartData: ChartData,
-    isEditable: boolean = false
+    isEditable: boolean = false,
+    ref: any
   ) => {
     const processedData = processChartData(
       chartData,
-      dataType === "percentage"
+      dataType === "percentage",
     );
 
     return (
@@ -156,59 +218,91 @@ export function PerformanceChart() {
           justifyContent="space-between"
           alignItems="center"
           mb={2}
-        >
-          <Typography variant="h6">
+          >
+          <Typography variant="h4">
             {isEditable ? "Simulated Performance" : "Real Performance"}
           </Typography>
-          {isEditable && (
             <Box display="flex" gap={1}>
+              <IconButton onClick={() => toggleFullscreen("simulated")}>
+                  <Fullscreen />
+                </IconButton>
+                <IconButton onClick={() => downloadChart("simulated")}>
+                  <Download />
+                </IconButton>
+                {isEditable && (
               <IconButton onClick={() => setEditMode(!editMode)}>
                 <EditIcon />
               </IconButton>
+              )}
               <FileUploadButton handleFileUpload={handleFileUpload} />
             </Box>
-          )}
         </Box>
 
-        <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={processedData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(tick) => format(new Date(tick), "MMM d")}
-            />
-            <YAxis
-              tickFormatter={(tick) =>
-                dataType === "percentage"
-                  ? `${tick.toFixed(0)}%`
-                  : tick.toFixed(2)
-              }
-              width={80} // Increased width for better visibility
-              padding={{ top: 10, bottom: 10 }} // Added padding
-            />
-            <Tooltip />
-            <Legend />
-            <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
-            <Line
-              type="monotone" // Changed to monotone for smoother line
-              dataKey="Model"
-              stroke="#ff7300"
-              strokeWidth={3} // Increased stroke width
-            />
-            <Line
-              type="monotone"
-              dataKey="SPY"
-              stroke="#8884d8"
-              strokeWidth={3} // Increased stroke width
-            />
-            <Line
-              type="monotone"
-              dataKey="VOO"
-              stroke="#82ca9d"
-              strokeWidth={3} // Increased stroke width
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div ref={ref}>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={processedData}>
+              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: '#666' }}
+                tickFormatter={(tick) => format(new Date(tick), "MMM d")}
+              />
+              <YAxis
+                tickFormatter={(tick) =>
+                  dataType === "percentage"
+                    ? `${tick.toFixed(0)}%`
+                    : tick.toFixed(2)
+                }
+                width={80}
+                tick={{ fill: '#666' }}
+              />
+              <Tooltip 
+                contentStyle={{
+                  background: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: 20 }}
+                formatter={(value) => (
+                  <span style={{ color: '#666' }}>{value}</span>
+                )}
+              />
+              <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+
+              {/* Animated Lines with custom styles */}
+              <Line
+                type="monotone"
+                dataKey="Model"
+                stroke={LINE_COLORS.MODEL}
+                strokeWidth={2}
+                dot={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+              <Line
+                type="monotone"
+                dataKey="SPY"
+                stroke={LINE_COLORS.SPY}
+                strokeWidth={2}
+                dot={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+              <Line
+                type="monotone"
+                dataKey="VOO"
+                stroke={LINE_COLORS.VOO}
+                strokeWidth={2}
+                dot={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
 
         {isEditable && editMode && (
           <Box
@@ -313,11 +407,11 @@ export function PerformanceChart() {
           </Grid>
 
           <Grid item xs={12}>
-            {simulatedData && renderPerformanceChart(simulatedData, true)}
+            {simulatedData && renderPerformanceChart(simulatedData, true, simulatedChartRef)}
           </Grid>
 
           <Grid item xs={12}>
-            {realData && renderPerformanceChart(realData)}
+            {realData && renderPerformanceChart(realData, false, realChartRef)}
           </Grid>
         </Grid>
       </Box>
