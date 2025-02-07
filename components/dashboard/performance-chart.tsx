@@ -42,25 +42,57 @@ import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
 
 const LINE_COLORS = {
-  MODEL: "#1976d2",    // Blue
-  SPY: "#2e7d32",      // Dark Green
-  VOO: "#ffa726"       // Orange
+  MODEL: "#1976d2", // Blue
+  SPY: "#2e7d32", // Dark Green
+  VOO: "#ffa726", // Orange
 };
+
+
 
 export function PerformanceChart() {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
   const [activeModel, setActiveModel] = useState("M15");
-  const [activeTimeline, setActiveTimeline] = useState("1y");
+  const [activeTimeline, setActiveTimeline] = useState("2y");
   const [editMode, setEditMode] = useState(false);
   const [simulatedModelData, setSimulatedModelData] = useState<number[]>([]);
+  const [simulatedNormalizedModelData, setSimulatedNormalizedModelData] =
+    useState<number[]>([]);
   const [dataType, setDataType] = useState<"percentage" | "absolute">(
-    "percentage"
+    "absolute"
   );
+  const [absoluteMode, setAbsoluteMode] = useState<
+    "normalized" | "unnormalized"
+  >("normalized");
   const simulatedChartRef = useRef<HTMLDivElement>(null);
   const realChartRef = useRef<HTMLDivElement>(null);
-  const [fullscreenChart, setFullscreenChart] = useState<"simulated" | "real" | null>(null);
+  const [fullscreenChart, setFullscreenChart] = useState<
+    "simulated" | "real" | null
+  >(null);
 
+  const normalize = (data: ChartData) => {
+    console.log(data)
+    const modelValues = data?.model ? data?.model[0] : [];
+    let normalizedModel: number[] = [];
+    if (data?.model) {
+      // Calculate normalization only if needed
+      if (dataType === "absolute" && absoluteMode === "normalized") {
+        const allSpyVooValues = [...data.spy, ...data.voo];
+        const minValue = Math.min(...allSpyVooValues);
+        const maxValue = Math.max(...allSpyVooValues);
+
+        normalizedModel = modelValues.map((value) => {
+          return (
+            ((value - Math.min(...modelValues)) /
+              (Math.max(...modelValues) - Math.min(...modelValues))) *
+              (maxValue - minValue) +
+            minValue
+          );
+        });
+      }
+    }
+    return normalizedModel;
+  };
 
   // Fetch performance data
   const fetchData = async (model: string, timeline: string) => {
@@ -70,6 +102,9 @@ export function PerformanceChart() {
       setSimulatedData(response);
       setRealData(response);
       setSimulatedModelData(response.model[0]);
+      const normalizedModelData = normalize(response);
+      console.log(normalizedModelData)
+      setSimulatedNormalizedModelData(normalizedModelData);
     } catch (error) {
       console.error("Error fetching performance data:", error);
     }
@@ -79,24 +114,18 @@ export function PerformanceChart() {
     fetchData(activeModel, activeTimeline);
   }, [activeModel, activeTimeline]);
 
+  
+
   // Process chart data
-  const processChartData = (data: ChartData, isPercentage: boolean) => {
+  const processChartData = (data: ChartData) => {
     if (!data) return [];
+    const modelValues = data?.model ? data?.model[0] : [];
 
-    // Calculate min/max values for normalization
-    const allSpyVooValues = [...data.spy, ...data.voo];
-    const minValue = Math.min(...allSpyVooValues) ;
-    const maxValue = Math.max(...allSpyVooValues);
-    const modelValues = data.model[0];
+    const isPercentage = dataType === "percentage";
 
-    // Normalize model data to SPY/VOO range
-    const normalizedModel = modelValues.map(value => {
-      return ((value - Math.min(...modelValues)) / 
-             (Math.max(...modelValues) - Math.min(...modelValues))) *
-             (maxValue - minValue) + minValue;
-    });
+    const normalizedModel = normalize(data);
 
-    return data.dates.map((date, index) => ({
+    const processedData = data.dates.map((date, index) => ({
       date,
       SPY: isPercentage
         ? (data.spy[index] / data.spy[0] - 1) * 100
@@ -106,16 +135,19 @@ export function PerformanceChart() {
         : data.voo[index],
       Model: isPercentage
         ? (modelValues[index] / modelValues[0] - 1) * 100
-        : normalizedModel[index],
+        : absoluteMode === "normalized"
+        ? normalizedModel[index]
+        : modelValues[index],
     }));
+
+    return processedData;
   };
 
-    // Toggle fullscreen
+  // Toggle fullscreen
   const toggleFullscreen = (chart: "simulated" | "real") => {
-    const element = chart === "simulated" 
-      ? simulatedChartRef.current 
-      : realChartRef.current;
-    
+    const element =
+      chart === "simulated" ? simulatedChartRef.current : realChartRef.current;
+
     if (element) {
       if (fullscreenChart === chart) {
         document.exitFullscreen();
@@ -129,10 +161,9 @@ export function PerformanceChart() {
 
   // Download chart
   const downloadChart = (chart: "simulated" | "real") => {
-    const container = chart === "simulated" 
-      ? simulatedChartRef.current 
-      : realChartRef.current;
-    
+    const container =
+      chart === "simulated" ? simulatedChartRef.current : realChartRef.current;
+
     if (container) {
       const svg = container.querySelector("svg");
       if (svg) {
@@ -151,12 +182,25 @@ export function PerformanceChart() {
     }
   };
 
-
   // Handle data editing
   const handleDataEdit = (index: number, value: string) => {
     const newData = [...simulatedModelData];
     newData[index] = Number(value);
     setSimulatedModelData(newData);
+
+    if (simulatedData) {
+      const updatedChartData = {
+        ...simulatedData,
+        model: [newData],
+      };
+      setSimulatedData(updatedChartData);
+    }
+  };
+
+  const handleNormalizedDataEdit = (index: number, value: string) => {
+    const newData = [...simulatedNormalizedModelData];
+    newData[index] = Number(value);
+    setSimulatedNormalizedModelData(newData);
 
     if (simulatedData) {
       const updatedChartData = {
@@ -206,10 +250,7 @@ export function PerformanceChart() {
     isEditable: boolean = false,
     ref: any
   ) => {
-    const processedData = processChartData(
-      chartData,
-      dataType === "percentage",
-    );
+    const processedData = processChartData(chartData);
 
     return (
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
@@ -218,24 +259,24 @@ export function PerformanceChart() {
           justifyContent="space-between"
           alignItems="center"
           mb={2}
-          >
+        >
           <Typography variant="h4">
             {isEditable ? "Simulated Performance" : "Real Performance"}
           </Typography>
-            <Box display="flex" gap={1}>
-              <IconButton onClick={() => toggleFullscreen("simulated")}>
-                  <Fullscreen />
-                </IconButton>
-                <IconButton onClick={() => downloadChart("simulated")}>
-                  <Download />
-                </IconButton>
-                {isEditable && (
+          <Box display="flex" gap={1}>
+            <IconButton onClick={() => toggleFullscreen("simulated")}>
+              <Fullscreen />
+            </IconButton>
+            <IconButton onClick={() => downloadChart("simulated")}>
+              <Download />
+            </IconButton>
+            {isEditable && (
               <IconButton onClick={() => setEditMode(!editMode)}>
                 <EditIcon />
               </IconButton>
-              )}
-              <FileUploadButton handleFileUpload={handleFileUpload} />
-            </Box>
+            )}
+            <FileUploadButton handleFileUpload={handleFileUpload} />
+          </Box>
         </Box>
 
         <div ref={ref}>
@@ -244,7 +285,7 @@ export function PerformanceChart() {
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
               <XAxis
                 dataKey="date"
-                tick={{ fill: '#666' }}
+                tick={{ fill: "#666" }}
                 tickFormatter={(tick) => format(new Date(tick), "MMM d")}
               />
               <YAxis
@@ -254,20 +295,20 @@ export function PerformanceChart() {
                     : tick.toFixed(2)
                 }
                 width={80}
-                tick={{ fill: '#666' }}
+                tick={{ fill: "#666" }}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
-                  background: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  background: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}
               />
-              <Legend 
+              <Legend
                 wrapperStyle={{ paddingTop: 20 }}
                 formatter={(value) => (
-                  <span style={{ color: '#666' }}>{value}</span>
+                  <span style={{ color: "#666" }}>{value}</span>
                 )}
               />
               <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
@@ -314,26 +355,48 @@ export function PerformanceChart() {
             }}
           >
             <Grid container spacing={2}>
-              {simulatedModelData.map((value, index) => (
-                <Grid
-                  item
-                  key={index}
-                  xs={12} // 1 column on small screens
-                  sm={6} // 2 columns on small-medium screens (optional, adjust as needed)
-                  md={4} // 3 columns on medium screens
-                  lg={3} // 4 columns on large screens
-                >
-                  <TextField
-                    fullWidth
-                    label={`Day ${index + 1}`}
-                    type="number"
-                    variant="outlined"
-                    size="small"
-                    value={value}
-                    onChange={(e) => handleDataEdit(index, e.target.value)}
-                  />
-                </Grid>
-              ))}
+              {absoluteMode === "unnormalized" &&
+                simulatedModelData.map((value, index) => (
+                  <Grid
+                    item
+                    key={index}
+                    xs={12} // 1 column on small screens
+                    sm={6} // 2 columns on small-medium screens (optional, adjust as needed)
+                    md={4} // 3 columns on medium screens
+                    lg={3} // 4 columns on large screens
+                  >
+                    <TextField
+                      fullWidth
+                      label={`Day ${index + 1}`}
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      value={value}
+                      onChange={(e) => handleDataEdit(index, e.target.value)}
+                    />
+                  </Grid>
+                ))}
+              {absoluteMode === "normalized" &&
+                simulatedNormalizedModelData.map((value, index) => (
+                  <Grid
+                    item
+                    key={index}
+                    xs={12} // 1 column on small screens
+                    sm={6} // 2 columns on small-medium screens (optional, adjust as needed)
+                    md={4} // 3 columns on medium screens
+                    lg={3} // 4 columns on large screens
+                  >
+                    <TextField
+                      fullWidth
+                      label={`Day ${index + 1}`}
+                      type="number"
+                      variant="outlined"
+                      size="small"
+                      value={value}
+                      onChange={(e) => handleNormalizedDataEdit(index, e.target.value)}
+                    />
+                  </Grid>
+                ))}
             </Grid>
           </Box>
         )}
@@ -403,11 +466,34 @@ export function PerformanceChart() {
                   <MenuItem value="absolute">Absolute</MenuItem>
                 </Select>
               </FormControl>
+
+              {dataType === "absolute" && (
+                <FormControl
+                  variant="outlined"
+                  size="small"
+                  sx={{ minWidth: 120 }}
+                >
+                  <InputLabel>Mode</InputLabel>
+                  <Select
+                    value={absoluteMode}
+                    onChange={(e) =>
+                      setAbsoluteMode(
+                        e.target.value as "normalized" | "unnormalized"
+                      )
+                    }
+                    label="Mode"
+                  >
+                    <MenuItem value="normalized">Normalized</MenuItem>
+                    <MenuItem value="unnormalized">Unnormalized</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
             </Box>
           </Grid>
 
           <Grid item xs={12}>
-            {simulatedData && renderPerformanceChart(simulatedData, true, simulatedChartRef)}
+            {simulatedData &&
+              renderPerformanceChart(simulatedData, true, simulatedChartRef)}
           </Grid>
 
           <Grid item xs={12}>
