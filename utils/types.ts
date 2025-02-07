@@ -113,3 +113,18 @@ export interface LoginResponse {
     { symbol: "^DJI", name: "Dow Jones" },
     { symbol: "^TNX", name: "US 10-Year Yield" },
   ];
+
+  export type News = {
+    title: string,
+    description: string,
+    source: string,
+    url: string,
+    banner_image: string,
+    time_published: string,
+    tickers: any,
+    sentiment: any,
+    source_domain: string,
+    authors: [],
+    summary: string,
+    category_within_source: string
+  }
