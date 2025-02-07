@@ -47,8 +47,6 @@ const LINE_COLORS = {
   VOO: "#ffa726", // Orange
 };
 
-
-
 export function PerformanceChart() {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
@@ -71,7 +69,6 @@ export function PerformanceChart() {
   >(null);
 
   const normalize = (data: ChartData) => {
-    console.log(data)
     const modelValues = data?.model ? data?.model[0] : [];
     let normalizedModel: number[] = [];
     if (data?.model) {
@@ -103,7 +100,6 @@ export function PerformanceChart() {
       setRealData(response);
       setSimulatedModelData(response.model[0]);
       const normalizedModelData = normalize(response);
-      console.log(normalizedModelData)
       setSimulatedNormalizedModelData(normalizedModelData);
     } catch (error) {
       console.error("Error fetching performance data:", error);
@@ -113,8 +109,6 @@ export function PerformanceChart() {
   useEffect(() => {
     fetchData(activeModel, activeTimeline);
   }, [activeModel, activeTimeline]);
-
-  
 
   // Process chart data
   const processChartData = (data: ChartData) => {
@@ -136,7 +130,7 @@ export function PerformanceChart() {
       Model: isPercentage
         ? (modelValues[index] / modelValues[0] - 1) * 100
         : absoluteMode === "normalized"
-        ? normalizedModel[index]
+        ? simulatedNormalizedModelData[index]
         : modelValues[index],
     }));
 
@@ -210,6 +204,31 @@ export function PerformanceChart() {
       setSimulatedData(updatedChartData);
     }
   };
+
+  useEffect(() => {
+    switch (absoluteMode) {
+      case "normalized":
+        const newNormData = [...simulatedNormalizedModelData];
+        if (simulatedData) {
+          const updatedChartData = {
+            ...simulatedData,
+            model: [newNormData],
+          };
+          setSimulatedData(updatedChartData);
+        }
+        return;
+      case "unnormalized":
+        const newData = [...simulatedModelData];
+        if (simulatedData) {
+          const updatedChartData = {
+            ...simulatedData,
+            model: [newData],
+          };
+          setSimulatedData(updatedChartData);
+        }
+        return;
+    }
+  }, [absoluteMode]);
 
   // File upload handler
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -393,7 +412,9 @@ export function PerformanceChart() {
                       variant="outlined"
                       size="small"
                       value={value}
-                      onChange={(e) => handleNormalizedDataEdit(index, e.target.value)}
+                      onChange={(e) =>
+                        handleNormalizedDataEdit(index, e.target.value)
+                      }
                     />
                   </Grid>
                 ))}
