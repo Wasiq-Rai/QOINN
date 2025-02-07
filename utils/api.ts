@@ -7,6 +7,7 @@ import {
   indicators,
   Insight,
   LoginResponse,
+  News,
   PerformanceData,
   Portfolio,
   PortfolioSummary,
@@ -123,6 +124,11 @@ export const getAIInsights = async (): Promise<Insight[]> => {
 export const getUserPremiumStatus = async () => {
   const response = await api.get<any>("/user-profiles/premium_status/");
   return response.data.is_premium;
+};
+
+export const getStockNews = async (): Promise<News[]> => {
+  const response = await api.get<any>("/stock-news/getNews/");
+  return response.data.feed;
 };
 
 export const TIMELINE_CONFIGS = {

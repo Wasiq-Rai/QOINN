@@ -1,24 +1,18 @@
 import { Layout } from "@/components/layout/layout";
 import HeroSection from "@/components/dashboard/hero-section";
-import { PortfolioSummary } from "@/components/dashboard/portfolio-summary";
 import { StockList } from "@/components/dashboard/stock-list";
-import { AIInsights } from "@/components/dashboard/ai-insights";
 import { Metadata } from "next";
 import { PerformanceChart } from "@/components/dashboard/performance-chart";
 import { StockTicker } from "@/components/stock-ticker";
 import { Footer } from "@/components/footer";
 import { Newsletter } from "@/components/newsletter";
 import { TeamSection } from "@/components/team-section";
-import { ContactForm } from "@/components/contact-form";
-import { Testimonials } from "@/components/testimonials";
-import { NewsSection } from "@/components/news-section";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import Faq from "../FAQs";
 import InfoCardSection from "@/components/InfoCard";
 import SiteMetricsDashboard from "../visitors/SiteMetricsDashboard";
 import  { QoinnExplainer } from "../qoinn-detail/page";
+import NewsSection from "../news/page";
 
 export const metadata: Metadata = {
   title: "QOINN Dashboard",
@@ -67,7 +61,7 @@ export default function DashboardPage() {
           </div>
         </section> */}
         {/* News Section */}
-        <NewsSection />
+        <NewsSection/>
 
         {/* Testimonials Section */}
         {/* <Testimonials /> */}
