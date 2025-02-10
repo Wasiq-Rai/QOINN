@@ -40,6 +40,8 @@ import { getPerformanceData, TIMELINE_CONFIGS } from "@/utils/api";
 import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
+import { useEquity } from "@/context/EquityContext";
+import { Protect } from "@clerk/nextjs";
 
 const LINE_COLORS = {
   MODEL: "#1976d2", // Blue
@@ -48,6 +50,8 @@ const LINE_COLORS = {
 };
 
 export function PerformanceChart() {
+  const { equityPercentage } = useEquity();
+
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
   const [activeModel, setActiveModel] = useState("M15");
@@ -428,6 +432,11 @@ export function PerformanceChart() {
   return (
     <>
       <PerformanceSummary modelData={simulatedModelData} dataType={dataType} />
+      <div className="bg-gray-100 p-4 rounded-lg">
+        <h2 className="text-xl font-semibold">
+          Current Equity: {equityPercentage || "Loading..."}
+        </h2>
+      </div>
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
