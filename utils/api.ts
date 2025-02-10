@@ -131,6 +131,19 @@ export const getStockNews = async (): Promise<News[]> => {
   return response.data.feed;
 };
 
+export const uploadPDF = async (formData: any): Promise<any> => {
+  await api.post('/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const getEquity = async (): Promise<any> => {
+  const response = await api.get("/equity");
+  return response;
+};
+
 export const TIMELINE_CONFIGS = {
   "2w": { period: "2w", label: "2 Weeks", expectedLength: 10 },
   "1m": { period: "1mo", label: "1 Month", expectedLength: 21 },

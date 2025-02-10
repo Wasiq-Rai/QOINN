@@ -10,6 +10,7 @@ import {
   UserButton
 } from '@clerk/nextjs'
 import { PremiumProvider } from '@/context/PremiumContext'
+import { EquityProvider } from '@/context/EquityContext'
 
 export const metadata: Metadata = {
   title: 'Qoinn',
@@ -27,6 +28,7 @@ export default function RootLayout({
     
     <ClerkProvider>
     <PremiumProvider>
+    <EquityProvider>
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
@@ -34,6 +36,7 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+    </EquityProvider>
     </PremiumProvider>
     </ClerkProvider>
   )
