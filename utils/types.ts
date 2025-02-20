@@ -128,3 +128,28 @@ export interface LoginResponse {
     summary: string,
     category_within_source: string
   }
+
+  export interface SiteMetrics {
+    total_visitors: number;
+    total_logins: number;
+    total_investments: number | string;
+  }
+  
+  export interface AdminMetricsManagerProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onUpdate: (amount: number) => void;
+    currentAmount: number;
+  }
+
+  export interface User {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    imageUrl: string;
+    lastSignInAt: string;
+    createdAt: string;
+    isAdmin: boolean;
+  }
+  

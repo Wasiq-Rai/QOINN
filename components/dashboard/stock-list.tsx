@@ -84,7 +84,7 @@ export function StockList() {
   const [inputValue, setInputValue] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [addedSymbol, setAddedSymbol] = useState("SPY");
+  const [addedSymbol, setAddedSymbol] = useState("AAPL");
 
   useEffect(() => {
     const fetchData = async () => {

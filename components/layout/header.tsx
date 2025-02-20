@@ -11,7 +11,6 @@ import {
 
 export function Header() {
   const { isSignedIn, user, isLoaded } = useUser();
-  console.log(user)
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#c2d6df]">
       <div className="container flex h-16 items-center">

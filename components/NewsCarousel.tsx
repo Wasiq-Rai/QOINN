@@ -10,28 +10,11 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import { News } from '@/utils/types';
 
 export function NewsCarousel({articles: news}:{articles: News[]}) {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/news/carousel/');
-        console.log(response)
-        // setNews(response.data);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchNews();
-  }, []);
 
   return (
     <div className="relative">
       <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar">
-        {news.map((item, index) => (
+        {news?.map((item, index) => (
           <div key={index} className="w-80 flex-shrink-0 group">
             <Link href={item.url} target="_blank">
               <Card className="h-full flex flex-col transition-transform hover:scale-[1.02]">
@@ -75,7 +58,7 @@ export function NewsCarousel({articles: news}:{articles: News[]}) {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <span className="text-sm text-gray-600 mt-2">
-                  {news.length}+ market updates
+                  {news?.length}+ market updates
                 </span>
               </CardContent>
             </Card>
