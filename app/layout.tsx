@@ -11,6 +11,7 @@ import {
 } from '@clerk/nextjs'
 import { PremiumProvider } from '@/context/PremiumContext'
 import { EquityProvider } from '@/context/EquityContext'
+import { AdminProvider } from '@/context/AdminContext'
 
 export const metadata: Metadata = {
   title: 'Qoinn',
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     
     <ClerkProvider>
+    <AdminProvider>
     <PremiumProvider>
     <EquityProvider>
     <html lang="en" suppressHydrationWarning>
@@ -38,6 +40,7 @@ export default function RootLayout({
     </html>
     </EquityProvider>
     </PremiumProvider>
+    </AdminProvider>
     </ClerkProvider>
   )
 }

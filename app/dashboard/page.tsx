@@ -10,9 +10,9 @@ import { TeamSection } from "@/components/team-section";
 import Link from "next/link";
 import Faq from "../FAQs";
 import InfoCardSection from "@/components/InfoCard";
-import SiteMetricsDashboard from "../visitors/SiteMetricsDashboard";
 import  { QoinnExplainer } from "../qoinn-detail/page";
 import NewsSection from "../news/page";
+import { SiteMetricsDashboard } from "../visitors/SiteMetricsDashboard";
 
 export const metadata: Metadata = {
   title: "QOINN Dashboard",
@@ -95,11 +95,7 @@ export default function DashboardPage() {
 
         {/* Team Section */}
         <TeamSection />
-        <SiteMetricsDashboard
-          totalVisitors={5234}
-          totalLogins={1876}
-          totalInvestments={453}
-        />
+        <SiteMetricsDashboard/>
         <Faq />
 
         {/* Newsletter Section */}

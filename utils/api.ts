@@ -144,6 +144,24 @@ export const getEquity = async (): Promise<any> => {
   return response;
 };
 
+export const getMetrics = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/metrics/`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching metrics:", error);
+  }
+};
+
+export const getInvestments = async (amount: number): Promise<any> => {
+  try {
+    const response = await api.put(`/metrics/investments/?total_investments=${amount}`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching investments:", error);
+  }
+};
+
 export const TIMELINE_CONFIGS = {
   "2w": { period: "2w", label: "2 Weeks", expectedLength: 10 },
   "1m": { period: "1mo", label: "1 Month", expectedLength: 21 },
