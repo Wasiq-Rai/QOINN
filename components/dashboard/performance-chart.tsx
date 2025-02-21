@@ -42,6 +42,7 @@ import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
 import { useEquity } from "@/context/EquityContext";
 import { Protect } from "@clerk/nextjs";
+import { useAdmin } from "@/context/AdminContext";
 
 const LINE_COLORS = {
   MODEL: "#1976d2", // Blue
@@ -51,7 +52,7 @@ const LINE_COLORS = {
 
 export function PerformanceChart() {
   const { equityPercentage } = useEquity();
-
+  const {isAdmin} = useAdmin();
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
   const [activeModel, setActiveModel] = useState("M15");
@@ -298,7 +299,9 @@ export function PerformanceChart() {
                 <EditIcon />
               </IconButton>
             )}
-            <FileUploadButton handleFileUpload={handleFileUpload} />
+            {isAdmin && (
+              <FileUploadButton handleFileUpload={handleFileUpload} />
+            )}
           </Box>
         </Box>
 

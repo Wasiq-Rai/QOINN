@@ -24,6 +24,11 @@
       "id": "slot-5",
       "datetime": "2024-01-01T14:00:00.000Z",
       "isBooked": false
+    },
+    {
+      "id": "1740096353374",
+      "datetime": "2025-02-21T08:10",
+      "isBooked": false
     }
   ],
   "meetings": [
