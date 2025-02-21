@@ -1,6 +1,6 @@
 'use server'
 import { auth, clerkClient } from "@clerk/nextjs/server";
-
+import { useSessionList } from "@clerk/nextjs";
 export const getTotalUsers = async (): Promise<any> => {
     try {
       const { data } =  await (await clerkClient()).users.getUserList();
@@ -14,7 +14,17 @@ export const getTotalUsers = async (): Promise<any> => {
   export const getTotalLogins = async (): Promise<any> => {
     try {
       const { data } = await (await clerkClient()).sessions.getSessionList();
-      return JSON.parse(JSON.stringify(data.length)); 
+      return JSON.parse(JSON.stringify(data)); 
+    } catch (error) {
+      console.error("Error fetching logins:", error);
+    }
+    return null;
+  };
+
+  export const getUserSessions = async (userId: string): Promise<any> => {
+    try {
+      const { sessions } =  useSessionList();
+      return sessions; 
     } catch (error) {
       console.error("Error fetching logins:", error);
     }

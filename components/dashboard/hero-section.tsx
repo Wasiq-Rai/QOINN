@@ -19,7 +19,7 @@ const HeroSection = () => {
           <h1 className="font-kigelia text-4xl md:text-6xl font-bold text-white bg-black p-1  mb-4">
             <Typewriter
               options={{
-                strings: ['Welcome to QOINN', 'Your AI-powered investment platform'],
+                strings: ['Welcome to QOINN', 'Your Trustable Investment Platform'],
                 autoStart: true,
                 loop: true,
               }}
