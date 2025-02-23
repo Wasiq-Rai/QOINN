@@ -282,7 +282,7 @@ export function PerformanceChart() {
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
         <h1 className="mb-4 text-3xl text-center pt-2 font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
                     <span className="font-kigelia text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                      {theme.strings.performaceCharts}
+                      {theme.strings.performanceCharts}
                     </span>
         </h1>
         <Box
