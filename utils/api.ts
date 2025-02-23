@@ -8,6 +8,7 @@ import {
   Insight,
   LoginResponse,
   News,
+  NormalApiResponse,
   PerformanceData,
   Portfolio,
   PortfolioSummary,
@@ -16,6 +17,7 @@ import {
   StockData,
   TickerData,
 } from "./types";
+import { ThemeContent } from "./themes";
 const API_URL = "http://localhost:8000/api";
 
 const api = axios.create({
@@ -34,14 +36,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const getStocks = async (symbols: string[]): Promise<ApiResponse> => {
+export const getStocks = async (symbols: string[]): Promise<NormalApiResponse> => {
   const allSymbols = [
     ...indicators.map(i => i.symbol),
     ...symbols.filter(s => !indicators.find(i => i.symbol === s))
   ];
   
   const symbolParams = allSymbols.map(s => `symbol=${encodeURIComponent(s)}`).join('&');
-  const response = await api.get<ApiResponse>(
+  const response = await api.get<NormalApiResponse>(
     `/stocks/fetch_current_value/?${symbolParams}`
   );
   return response.data;
@@ -159,6 +161,50 @@ export const getInvestments = async (amount: number): Promise<any> => {
     return response;
   } catch (error) {
     console.error("Error fetching investments:", error);
+  }
+};
+
+export const themeApi = {
+  getActiveTheme: async (): Promise<ApiResponse<ThemeContent>> => {
+    const response = await api.get<ApiResponse<ThemeContent>>("/theme/active/");
+    return response.data;
+  },
+
+  getAllThemes: async (): Promise<ApiResponse<ThemeContent[]>> => {
+    const response = await api.get<ApiResponse<ThemeContent[]>>("/theme/");
+    return response.data;
+  },
+
+  updateTheme: async (themeData: Partial<ThemeContent>): Promise<ApiResponse<ThemeContent>> => {
+    const response = await api.post<ApiResponse<ThemeContent>>("/theme/", themeData);
+    return response.data;
+  },
+
+  createTheme: async (themeData: Partial<ThemeContent>): Promise<ApiResponse<ThemeContent>> => {
+    const response = await api.post<ApiResponse<ThemeContent>>("/theme/", {
+      ...themeData,
+      is_active: true
+    });
+    return response.data;
+  },
+
+  deleteTheme: async (themeId: number): Promise<ApiResponse<void>> => {
+    const response = await api.delete<ApiResponse<void>>(`/theme/${themeId}/`);
+    return response.data;
+  },
+};
+
+export const withErrorHandling = async <T>(
+  apiCall: () => Promise<ApiResponse<T>>
+): Promise<ApiResponse<T>> => {
+  try {
+    return await apiCall();
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      message: "An unexpected error occurred"
+    };
   }
 };
 

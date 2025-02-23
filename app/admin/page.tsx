@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"
+import { ThemeEditor } from "./ThemeEditor"
 
 export default function AdminPage() {
   const { user }= useUser();
@@ -98,6 +99,7 @@ export default function AdminPage() {
               <AdminEquityManager />
             </CardContent>
           </Card>
+          <ThemeEditor/>
         </div>
       </main>
     </div>

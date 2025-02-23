@@ -75,7 +75,7 @@ export interface LoginResponse {
     data_source?: string;
   }
   
-  export interface ApiResponse {
+  export interface NormalApiResponse {
     results: {},
     errors: {}
   }
@@ -153,3 +153,20 @@ export interface LoginResponse {
     isAdmin: boolean;
   }
   
+  export interface ApiResponse<T> {
+    success: boolean;
+    data: T | null;
+    message: string;
+    errors?: Record<string, string[]>;
+  }
+  
+  // types/theme.ts
+  export interface ThemeContent {
+    id?: number;
+    strings: Record<string, string>;
+    colors: Record<string, string>;
+    images: Record<string, string>;
+    is_active: boolean;
+    created_at?: string;
+    updated_at?: string;
+  }
