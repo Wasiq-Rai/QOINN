@@ -8,7 +8,7 @@ import { Eye, LogIn, DollarSign, RefreshCw } from "lucide-react";
 import { SiteMetrics, User } from "@/utils/types";
 import { getInvestments, getMetrics } from "@/utils/api";
 import { AdminMetricsManager } from "../admin/AdminMetricsManager";
-import { getTotalLogins, getTotalUsers } from "@/actions/users";
+import { getTotalUsers } from "@/actions/users";
 import { useAdmin } from "@/context/AdminContext";
 import { UserManagementModal } from "./UserManagementModal";
 
@@ -30,11 +30,11 @@ export const SiteMetricsDashboard = () => {
       const investment = await getMetrics();
       const users = await getTotalUsers();
       setAllUsers(users)
-      const logins = await getTotalLogins();
-      console.log(logins);
+      // const logins = await getTotalLogins();
+      // console.log(logins);
 
       setSiteMetrics({
-        total_visitors: metrics.total_visitors, // Keep existing value
+        total_visitors: metrics.total_visitors || 1, // Keep existing value
         total_logins: users.length, // Set total_logins from users API response
         total_investments: investment.data.total_investments.toString(), // Set total_investments from investment API response
       });

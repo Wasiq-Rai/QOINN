@@ -1,7 +1,9 @@
 'use client'
+import { useTheme } from '@/context/ThemeContext';
 import Typewriter from 'typewriter-effect';
 
 const HeroSection = () => {
+  const { theme } = useTheme();
   return (
     <section className="relative h-[50vh] overflow-hidden">
       <video
@@ -19,7 +21,7 @@ const HeroSection = () => {
           <h1 className="font-kigelia text-4xl md:text-6xl font-bold text-white bg-black p-1  mb-4">
             <Typewriter
               options={{
-                strings: ['Welcome to QOINN', 'Your Trustable Investment Platform'],
+              strings: [theme.strings.welcomeMessage, 'Your Trustable Investment Platform'],
                 autoStart: true,
                 loop: true,
               }}

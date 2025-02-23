@@ -1,13 +1,9 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { ThemeProvider } from "next-themes"
+import { ThemeProvider } from '@/context/ThemeContext'
 import { Inter } from "next/font/google"
 import {
   ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
 } from '@clerk/nextjs'
 import { PremiumProvider } from '@/context/PremiumContext'
 import { EquityProvider } from '@/context/EquityContext'
@@ -33,7 +29,7 @@ export default function RootLayout({
     <EquityProvider>
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light">
+        <ThemeProvider>
           {children}
         </ThemeProvider>
       </body>

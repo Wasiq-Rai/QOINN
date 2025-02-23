@@ -11,25 +11,25 @@ export const getTotalUsers = async (): Promise<any> => {
     return null;
   };
 
-  export const getTotalLogins = async (): Promise<any> => {
-    try {
-      const { data } = await (await clerkClient()).sessions.getSessionList();
-      return JSON.parse(JSON.stringify(data)); 
-    } catch (error) {
-      console.error("Error fetching logins:", error);
-    }
-    return null;
-  };
+  // export const getTotalLogins = async (): Promise<any> => {
+  //   try {
+  //     const { data } = await (await clerkClient()).sessions.getSessionList();
+  //     return JSON.parse(JSON.stringify(data)); 
+  //   } catch (error) {
+  //     console.error("Error fetching logins:", error);
+  //   }
+  //   return null;
+  // };
 
-  export const getUserSessions = async (userId: string): Promise<any> => {
-    try {
-      const { sessions } =  useSessionList();
-      return sessions; 
-    } catch (error) {
-      console.error("Error fetching logins:", error);
-    }
-    return null;
-  };
+  // export const getUserSessions = async (userId: string): Promise<any> => {
+  //   try {
+  //     const { sessions } =  useSessionList();
+  //     return sessions; 
+  //   } catch (error) {
+  //     console.error("Error fetching logins:", error);
+  //   }
+  //   return null;
+  // };
 
 export const makeUserAdmin = async (userId: string): Promise<boolean> => {
   try {
