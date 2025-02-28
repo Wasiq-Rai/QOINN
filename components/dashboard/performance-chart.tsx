@@ -12,7 +12,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { motion } from "framer-motion";
 import { format } from "date-fns";
 
 import {
@@ -41,7 +40,6 @@ import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
 import { useEquity } from "@/context/EquityContext";
-import { Protect } from "@clerk/nextjs";
 import { useAdmin } from "@/context/AdminContext";
 import { useTheme } from "@/context/ThemeContext";
 

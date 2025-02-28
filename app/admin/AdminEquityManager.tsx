@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useEquity } from "@/context/EquityContext"
-import { useDropzone } from "react-dropzone"
+import { useDropzone} from "react-dropzone"
 import { uploadPDF } from "@/utils/api"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -17,7 +17,7 @@ export const AdminEquityManager = () => {
     accept: { "application/pdf": [".pdf"] },
     multiple: false,
     disabled: uploadStatus === "loading",
-    onDrop: async (files) => {
+    onDrop: async (files: string | any[]) => {
       if (files.length > 0) {
         await handlePdfUpload(files[0])
       }
