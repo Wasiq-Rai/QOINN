@@ -5,17 +5,8 @@ import { getAvailableSlots } from "@/app/actions"
 import { useEquity } from "@/context/EquityContext"
 import AdminSlotManager from "@/components/meeting/AdminSlotManager"
 import { AdminEquityManager } from "./AdminEquityManager"
-import { Bell, ChevronDown, User } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Bell } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"

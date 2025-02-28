@@ -1,18 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trash2, Shield, UserCog } from 'lucide-react';
-import { makeUserAdmin } from '@/actions/users'; // Create this action
-import { User } from '@/utils/types';
+import { Trash2, Shield } from "lucide-react";
+import { User } from "@/utils/types";
 
 interface UserManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   users: User[];
-  setUsers: any
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 }
 
 export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserManagementModalProps) => {
@@ -21,12 +20,16 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
   const handleMakeAdmin = async (userId: string) => {
     setActionInProgress(userId);
     try {
-      const success = await makeUserAdmin(userId);
-      if (success) {
-        // Update local state to show changes immediately
-        setUsers(users.map((user: { id: string; }) => 
-          user.id === userId ? { ...user, isAdmin: true } : user
-        ));
+      const response = await fetch("/api/users/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        setUsers((prevUsers) =>
+          prevUsers.map((user) => (user.id === userId ? { ...user, isAdmin: true } : user))
+        );
       }
     } catch (error) {
       console.error("Error making user admin:", error);
@@ -38,14 +41,14 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
   const handleDeleteUser = async (userId: string) => {
     setActionInProgress(userId);
     try {
-      // This needs to be implemented as a server action
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
+      const response = await fetch("/api/users/", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
       });
-      
+
       if (response.ok) {
-        // Remove user from local state
-        setUsers(users.filter((user: { id: string; }) => user.id !== userId));
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
       }
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -60,31 +63,33 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">User Management</DialogTitle>
         </DialogHeader>
-        
-        {!users ? (
+
+        {!users.length ? (
           <div className="flex justify-center py-6">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="bg-gray-50 p-3 rounded-md mb-4">
-              <p className="text-sm text-gray-600">Total Users: <span className="font-bold">{users.length}</span></p>
+              <p className="text-sm text-gray-600">
+                Total Users: <span className="font-bold">{users.length}</span>
+              </p>
             </div>
-            
-            {users.map(user => (
+
+            {users.map((user) => (
               <Card key={user.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="h-12 w-12 rounded-full overflow-hidden bg-gray-100">
                       {user.imageUrl ? (
-                        <img 
-                          src={user.imageUrl} 
-                          alt={`${user.firstName || ''} ${user.lastName || ''}`}
-                          className="h-full w-full object-cover" 
+                        <img
+                          src={user.imageUrl}
+                          alt={`${user.firstName || ""} ${user.lastName || ""}`}
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-500">
-                          {(user.firstName?.[0] || '') + (user.lastName?.[0] || '')}
+                          {(user.firstName?.[0] || "") + (user.lastName?.[0] || "")}
                         </div>
                       )}
                     </div>
@@ -98,12 +103,10 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
                         )}
                       </h3>
                       <p className="text-sm text-gray-500">{user.email}</p>
-                      <p className="text-xs text-gray-400">
-                        Joined: {new Date(user.createdAt).toLocaleDateString()}
-                      </p>
+                      <p className="text-xs text-gray-400">Joined: {new Date(user.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex space-x-2">
                     {!user.isAdmin && (
                       <Button
@@ -130,14 +133,8 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
                       disabled={actionInProgress === user.id}
                       className="flex items-center space-x-1"
                     >
-                      {actionInProgress === user.id ? (
-                        <div className="animate-spin h-4 w-4 border-b-2 border-white rounded-full"></div>
-                      ) : (
-                        <>
-                          <Trash2 className="h-4 w-4" />
-                          <span>Delete</span>
-                        </>
-                      )}
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete</span>
                     </Button>
                   </div>
                 </div>
