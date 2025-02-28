@@ -28,7 +28,7 @@ export default function DashboardPage() {
         <div>
           <PerformanceChart />
         </div>
-        {/* <QoinnExplainer/> */}
+        <QoinnExplainer/>
         <div className="space-y-8">
           {/* <PortfolioSummary /> */}
           <InfoCardSection />
