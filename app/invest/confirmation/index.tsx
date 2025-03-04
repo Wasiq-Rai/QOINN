@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 
-export default function ConfirmationPage() {
+export default function Confirmation() {
   const router = useRouter();
 
   return (

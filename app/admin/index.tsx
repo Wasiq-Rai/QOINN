@@ -12,7 +12,7 @@ import { UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import { ThemeEditor } from "./ThemeEditor"
 
-export default function AdminPage() {
+export default function Admin() {
   const { user }= useUser();
   const { equityPercentage } = useEquity()
   const [slots, setSlots] = useState<any>([])

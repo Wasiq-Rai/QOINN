@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import DashboardPage from './dashboard/page'
+import Dashboard from './dashboard'
 
 export const metadata: Metadata = {
   title: 'QOINN - Quantitative Investment Model',
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <DashboardPage/>
+    <Dashboard/>
   )
 }
 

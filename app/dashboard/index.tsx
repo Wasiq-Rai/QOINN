@@ -11,7 +11,7 @@ import Link from "next/link";
 import Faq from "../FAQs";
 import InfoCardSection from "@/components/InfoCard";
 import  { QoinnExplainer } from "../qoinn-detail/page";
-import NewsSection from "../news/page";
+import NewsSection from "../news";
 import { SiteMetricsDashboard } from "../visitors/SiteMetricsDashboard";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "View your portfolio performance and manage your investments.",
 };
 
-export default function DashboardPage() {
+export default function Dashboard() {
   return (
     <Layout>
       <HeroSection />
@@ -28,7 +28,7 @@ export default function DashboardPage() {
         <div>
           <PerformanceChart />
         </div>
-        <QoinnExplainer/>
+        {/* <QoinnExplainer/> */}
         <div className="space-y-8">
           {/* <PortfolioSummary /> */}
           <InfoCardSection />

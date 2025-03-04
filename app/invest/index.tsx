@@ -13,7 +13,7 @@ import {
 import { CheckCircleOutline as CheckIcon } from "@mui/icons-material";
 import InvestmentForm from "@/components/meeting/InvestmentForm";
 
-export default function InvestPage() {
+export default function Invest() {
   return (
     <Box
       sx={{
