@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --debug",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build --debug",
     "start": "next start",
     "lint": "next lint"
   },
@@ -59,7 +59,6 @@
     "dropzone": "^6.0.0-beta.2",
     "embla-carousel-react": "8.5.1",
     "flowbite-react": "^0.10.2",
-    "framer-motion": "^11.16.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "my-v0-project": "file:",
