@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { UserButton, useUser } from "@clerk/nextjs"
 import Link from "next/link"
 import { ThemeEditor } from "./ThemeEditor"
+import EquityDonutChart from "@/components/EquityDonutChart"
+import { Box } from "@mui/material"
 
 export default function AdminPage() {
   const { user }= useUser();
@@ -90,8 +92,11 @@ export default function AdminPage() {
               <AdminEquityManager />
             </CardContent>
           </Card>
-          <ThemeEditor/>
         </div>
+          <Box>
+          <EquityDonutChart/>
+          <ThemeEditor/>
+          </Box>
       </main>
     </div>
   )

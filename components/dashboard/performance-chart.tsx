@@ -440,11 +440,6 @@ export function PerformanceChart() {
   return (
     <>
       <PerformanceSummary modelData={simulatedModelData} dataType={dataType} />
-      <div className="bg-gray-100 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold">
-          Current Equity: {equityPercentage || "Loading..."}
-        </h2>
-      </div>
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
