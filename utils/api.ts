@@ -18,7 +18,7 @@ import {
   TickerData,
 } from "./types";
 import { ThemeContent } from "./themes";
-const API_URL = "http://localhost:8000/api";
+const API_URL = "https://qoinn-backend-django-production.up.railway.app/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -83,6 +83,12 @@ export const getPerformanceData = async (
 
 export const getPortfolioSummary = async (): Promise<PortfolioSummary> => {
   const response = await api.get<PortfolioSummary>("/portfolios/summary/");
+  return response.data || null;
+};
+
+export const getStocksHistory = async (symbol: string, period: string, interval: string): Promise<any> => {
+  const response = await api.get(`/stocks/${symbol}/${period}/${interval}/`);
+  console.log(response)
   return response.data || null;
 };
 
