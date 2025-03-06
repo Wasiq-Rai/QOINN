@@ -26,7 +26,7 @@ export function StockTicker() {
         const newChanges: Record<string, number> = {};
 
         // Fetch prices and changes for all stocks
-        for (const stock of [...stocks, ...indicators]) {
+        for (const stock of [...indicators]) {
           const data = await fetchStockData(stock.symbol);
           if (data) {
             newPrices[stock.symbol] = data.price;
@@ -45,8 +45,8 @@ export function StockTicker() {
 
   return (
     <Card className="p-4 bg-black text-white overflow-hidden">
-      <div className="flex animate-ticker">
-        {[...indicators, ...stocks].map((item) => (
+      <div className="flex">
+        {[...indicators].map((item) => (
           <div key={item.symbol} className="flex items-center space-x-4 mr-8">
             <span className="font-bold">{stocks.includes(item) ? item.symbol : item.name}</span>
             <span>${prices[item.symbol]?.toFixed(2) || '---'}</span>

@@ -35,31 +35,9 @@ export default function DashboardPage() {
           <div>
             <StockList />
           </div>
-          {/* <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              AI Insights
-            </h2>
-            <AIInsights />
-          </div> */}
         </div>
-        {/* Current Investments Section */}
-        {/* <section id="investments" className="py-12 bg-secondary/10">
-          <div className="container px-4 md:px-6">
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Current QOINN Investments
-            </h2>
-            <p className="text-center mb-8 text-muted-foreground">
-              Subscribe to see the full list and detailed scores
-            </p>
-            <StockList />
-          </div>
-        </section> */}
         {/* News Section */}
         <NewsSection/>
-
-        {/* Testimonials Section */}
-        {/* <Testimonials /> */}
-
         {/* Contact Section */}
         <section className="py-12 bg-white" id="contact">
           <div className="container px-4 md:px-6">

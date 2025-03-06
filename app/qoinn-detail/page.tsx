@@ -1,84 +1,4 @@
 "use client";
-interface StockData {
-  time: number;
-  value: number;
-  change?: number;
-}
-
-interface IndexFund {
-  name: string;
-  symbol: string;
-  description: string;
-  marketCap: number;
-  data: StockData[];
-}
-
-interface Stock {
-  id: string;
-  name: string;
-  data: StockData[];
-  momentum: number;
-  selected: boolean;
-}
-
-interface QoinnState {
-  selectedStocks: string[];
-  currentStep: number;
-  animationPhase: number;
-}
-
-// utils.ts
-const generateStockData = (
-  trend: "up" | "down" | "neutral",
-  startValue: number = 100,
-  points: number = 20,
-  volatility: number = 1
-): StockData[] => {
-  const data: StockData[] = [];
-  let value = startValue;
-
-  for (let i = 0; i < points; i++) {
-    const random = (Math.random() - 0.5) * volatility;
-    const trendFactor = trend === "up" ? 0.5 : trend === "down" ? -0.5 : 0;
-    const change = random + trendFactor;
-    value = Math.max(value * (1 + change), 20);
-
-    data.push({
-      time: i,
-      value: Number(value.toFixed(2)),
-      change: change,
-    });
-  }
-
-  return data;
-};
-
-// constants.ts
-const INDEX_FUNDS: IndexFund[] = [
-  {
-    name: "Vanguard S&P 500 ETF",
-    symbol: "VOO",
-    description: "Tracks S&P 500 index",
-    marketCap: 789.4,
-    data: generateStockData("up", 100, 20, 0.8),
-  },
-  {
-    name: "SPDR S&P 500 ETF Trust",
-    symbol: "SPY",
-    description: "Largest ETF tracking S&P 500",
-    marketCap: 420.3,
-    data: generateStockData("up", 98, 20, 0.8),
-  },
-  {
-    name: "Vanguard Total Stock Market ETF",
-    symbol: "VTI",
-    description: "Broad market exposure",
-    marketCap: 325.7,
-    data: generateStockData("up", 102, 20, 0.8),
-  },
-];
-
-// QoinnExplainer.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   LineChart,
@@ -108,6 +28,30 @@ import {
   Play,
   Pause,
 } from "lucide-react";
+import { getStocksHistory } from "@/utils/api";
+import { format } from "date-fns";
+
+interface StockData {
+  time: number;
+  value: number;
+  change?: number;
+}
+
+interface Stock {
+  id: string;
+  name: string;
+  symbol: string;
+  price: number;
+  change: number;
+  history: StockData[];
+  selected: boolean;
+}
+
+interface QoinnState {
+  selectedStocks: string[];
+  currentStep: number;
+  animationPhase: number;
+}
 
 const CustomTooltip: React.FC<{
   active?: boolean;
@@ -118,7 +62,6 @@ const CustomTooltip: React.FC<{
 
   return (
     <div className="bg-white p-2 border rounded shadow-lg">
-      <p className="font-medium">Time: {label}</p>
       <p className="text-blue-600">Value: {payload[0].value.toFixed(2)}</p>
       {payload[0].payload.change && (
         <p
@@ -197,7 +140,7 @@ const StockCard: React.FC<{
   >
     <div className="flex justify-between items-center mb-2">
       <h4 className="font-semibold">{stock.name}</h4>
-      {stock.momentum > 0 ? (
+      {stock.change > 0 ? (
         <TrendingUp className="text-green-500 w-4 h-4" />
       ) : (
         <TrendingDown className="text-red-500 w-4 h-4" />
@@ -205,14 +148,14 @@ const StockCard: React.FC<{
     </div>
     <div className="h-32">
       <StockChart
-        data={stock.data}
+        data={stock.history}
         showAxes={false}
-        color={stock.momentum > 0 ? "#22c55e" : "#ef4444"}
+        color={stock.change > 0 ? "#22c55e" : "#ef4444"}
       />
     </div>
     <div className="mt-2 text-sm text-gray-600">
-      Momentum: {stock.momentum > 0 ? "+" : ""}
-      {stock.momentum.toFixed(2)}%
+      Change: {stock.change > 0 ? "+" : ""}
+      {stock.change.toFixed(2)}%
     </div>
   </div>
 );
@@ -224,40 +167,52 @@ export const QoinnExplainer: React.FC = () => {
     animationPhase: 0,
   });
   const [isPlaying, setIsPlaying] = useState(true);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Generate sample stocks
-  const stocks = useMemo(() => {
-    return Array.from({ length: 8 }, (_, i) => ({
-      id: `stock${i + 1}`,
-      name: `Stock ${i + 1}`,
-      data: generateStockData(
-        i % 2 === 0 ? "up" : "down",
-        90 + Math.random() * 20,
-        20,
-        1.2
-      ),
-      momentum: Math.random() * 20 - 10,
-      selected: false,
-    }));
+  useEffect(() => {
+    const fetchStockData = async () => {
+      try {
+        const symbols = ["SPY", "VOO", "^DJI"]; // Example stock symbols
+        const period = "2y"; // Example period
+        const interval = "1d"; // Example interval
+  
+        const stockData = await Promise.all(
+          symbols.map(async (symbol) => {
+            const response = await getStocksHistory(symbol,period,interval);
+            const data = response;
+            return {
+              id: symbol,
+              name: symbol,
+              symbol: symbol,
+              price: data[data.length - 1].Close, // Latest closing price
+              change: ((data[data.length - 1].Close - data[0].Close) / data[0].Close) * 100, // Percentage change
+              history: data.map((entry: any) => ({
+                time: format(new Date(entry.Date), 'MMM d, yyyy'),
+                value: entry.Close,
+                change: ((entry.Close - data[0].Close) / data[0].Close) * 100,
+              })),
+              selected: false,
+            };
+          })
+        );
+  
+        setStocks(stockData);
+      } catch (err) {
+        console.log(err)
+        setError("Failed to fetch stock data");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchStockData();
   }, []);
 
   const toggleAnimation = useCallback(() => {
     setIsPlaying((prev) => !prev);
   }, []);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const interval = setInterval(() => {
-      setState((prev) => ({
-        ...prev,
-        currentStep: (prev.currentStep + 1) % 3,
-        animationPhase: (prev.animationPhase + 1) % 4,
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const handleStockSelect = useCallback((id: string) => {
     setState((prev) => ({
@@ -267,6 +222,9 @@ export const QoinnExplainer: React.FC = () => {
         : [...prev.selectedStocks, id],
     }));
   }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -304,12 +262,12 @@ export const QoinnExplainer: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
-            {INDEX_FUNDS.map((fund) => (
-              <div key={fund.symbol} className="space-y-2">
-                <h3 className="font-semibold">{fund.symbol}</h3>
-                <p className="text-sm text-gray-600">{fund.description}</p>
+            {stocks.map((stock) => (
+              <div key={stock.id} className="space-y-2">
+                <h3 className="font-semibold">{stock.symbol}</h3>
+                <p className="text-sm text-gray-600">{stock.name}</p>
                 <div className="h-48">
-                  <StockChart data={fund.data} animated={isPlaying} />
+                  <StockChart data={stock.history} animated={isPlaying} />
                 </div>
               </div>
             ))}
@@ -359,7 +317,7 @@ export const QoinnExplainer: React.FC = () => {
                           <TrendingUp className="text-green-500 w-4 h-4" />
                           <span>{stock.name}</span>
                           <span className="text-green-600">
-                            {stock.momentum.toFixed(2)}%
+                            {stock.change.toFixed(2)}%
                           </span>
                         </div>
                       )
@@ -373,10 +331,10 @@ export const QoinnExplainer: React.FC = () => {
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Average Momentum</p>
+                    <p className="text-sm text-gray-600">Average Change</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {(
-                        stocks.reduce((acc, s) => acc + s.momentum, 0) /
+                        stocks.reduce((acc, s) => acc + s.change, 0) /
                         stocks.length
                       ).toFixed(2)}
                       %
