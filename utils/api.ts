@@ -134,7 +134,7 @@ export const getStockNews = async (): Promise<News[]> => {
 };
 
 export const uploadPDF = async (formData: any): Promise<any> => {
-  await api.post('/upload', formData, {
+  await api.post('/upload/', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -143,6 +143,11 @@ export const uploadPDF = async (formData: any): Promise<any> => {
 
 export const getEquity = async (): Promise<any> => {
   const response = await api.get("/equity");
+  return response;
+};
+
+export const getEquityStocks = async (): Promise<any> => {
+  const response = await api.get("/equity-stocks/");
   return response;
 };
 
