@@ -64,7 +64,7 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
           <DialogTitle className="text-xl font-bold">User Management</DialogTitle>
         </DialogHeader>
 
-        {!users.length ? (
+        {!users?.length ? (
           <div className="flex justify-center py-6">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
           </div>

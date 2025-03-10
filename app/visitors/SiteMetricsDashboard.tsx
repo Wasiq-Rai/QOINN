@@ -11,12 +11,13 @@ import { AdminMetricsManager } from "../admin/AdminMetricsManager";
 import { getTotalUsers } from "@/actions/users";
 import { useAdmin } from "@/context/AdminContext";
 import { UserManagementModal } from "./UserManagementModal";
+import { useTheme } from "@/context/ThemeContext";
 
 export const SiteMetricsDashboard = () => {
   const { user, isLoaded } = useUser();
   const { isAdmin, isLoading } = useAdmin();
   const [allUsers, setAllUsers]= useState<User[]>([]);
-
+  const { theme } = useTheme();
   const [metrics, setSiteMetrics] = useState<SiteMetrics>({
     total_visitors: 0,
     total_logins: 0,
@@ -76,7 +77,7 @@ export const SiteMetricsDashboard = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">
-          QOINN Performance Dashboard
+          {theme.strings.QOINNPerformanceDashboard}
         </h2>
         {isAdmin && (
           <Button
