@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { getStocksHistory } from "@/utils/api";
 import { format } from "date-fns";
+import { useTheme } from "@/context/ThemeContext";
 
 interface StockData {
   time: number;
@@ -170,7 +171,7 @@ export const QoinnExplainer: React.FC = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { theme } = useTheme();
   useEffect(() => {
     const fetchStockData = async () => {
       try {
@@ -230,11 +231,10 @@ export const QoinnExplainer: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       <header className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-[#2e5f7d]">
-          How does QOINN work?
+          {theme.strings.howDoesQoinnWork}
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Intelligent investment strategy combining index tracking with momentum
-          optimization
+          {theme.strings.howDoesQoinnWorkDescription}
         </p>
         <div className="flex justify-center space-x-4">
           <Button variant="outline" size="sm" onClick={toggleAnimation}>
@@ -250,14 +250,9 @@ export const QoinnExplainer: React.FC = () => {
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Index Fund Tracking</CardTitle>
+          <CardTitle>{theme.strings.indexFundTracking}</CardTitle>
           <CardDescription>
-            An index assigns weights to stocks based on factors like market
-            capitalization, stock price, or equal weighting. Index funds then
-            distribute investments proportionally to these weights, ensuring the
-            fund’s performance closely tracks the index. However, not all funds
-            are in a good period with upward trends and momentum like the red
-            ones down.
+            {theme.strings.indexFundTrackingDescription}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -277,9 +272,8 @@ export const QoinnExplainer: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Stock Selection Process</CardTitle>
-          <CardDescription>What if we can choose the stocks with upward trends and wrap them up to create a smaller batch fund?</CardDescription>
-          <CardDescription>As the day progresses and certain stocks lose their momentum and begin to decline, QOINN dynamically replaces those underperforming stocks (marked in red) with others that are gaining momentum, ensuring optimal portfolio </CardDescription>
+          <CardTitle>{theme.strings.stockSelectionProcess}</CardTitle>
+          <CardDescription>{theme.strings.stockSeectionProcessDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-4 gap-4">
@@ -299,14 +293,14 @@ export const QoinnExplainer: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Portfolio Optimization</CardTitle>
+          <CardTitle>{theme.strings.portfolioOptimization}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-green-50 rounded-lg">
                 <h4 className="font-semibold text-green-700 mb-2">
-                  Selected Stocks
+                  {theme.strings.selectedStocks}
                 </h4>
                 <div className="space-y-2">
                   {state.selectedStocks.map((id) => {
@@ -327,11 +321,11 @@ export const QoinnExplainer: React.FC = () => {
               </div>
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-semibold text-blue-700 mb-2">
-                  Optimization Metrics
+                  {theme.strings.optimizationMetrics}
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Average Change</p>
+                    <p className="text-sm text-gray-600">{theme.strings.optimizationMetricsAverageChange}</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {(
                         stocks.reduce((acc, s) => acc + s.change, 0) /
@@ -341,7 +335,7 @@ export const QoinnExplainer: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Selected Count</p>
+                    <p className="text-sm text-gray-600">{theme.strings.selectedCount}</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {state.selectedStocks.length}
                     </p>

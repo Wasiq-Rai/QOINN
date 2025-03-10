@@ -35,6 +35,7 @@ import Subscription from "@/app/subscription/subscription";
 import { getStocks } from "@/utils/api";
 import { indicators, Stock } from "@/utils/types";
 import TradingViewWidget from "./Charts/TradingViewWidget";
+import { useTheme } from "@/context/ThemeContext";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-10px); }
@@ -85,7 +86,7 @@ export function StockList() {
   const [inputError, setInputError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addedSymbol, setAddedSymbol] = useState("AAPL");
-
+  const { theme } = useTheme();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -172,7 +173,7 @@ export function StockList() {
           <Stack direction="row" alignItems="center" spacing={2} mb={2}>
             <TrendingUp fontSize="large" />
             <Typography variant="h3" fontWeight="bold">
-              Market Dashboard
+              {theme.strings.marketDashboard}
             </Typography>
           </Stack>
 
@@ -253,7 +254,7 @@ export function StockList() {
               >
                 <Lock fontSize="small" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Premium required to add stocks
+                  {theme.strings.premiumRequiredToAddStocksMessage}
                 </Typography>
               </Box>
             )}
@@ -281,10 +282,10 @@ export function StockList() {
           >
             <Lock fontSize="large" sx={{ mb: 2, fontSize: 64 }} />
             <Typography variant="h4" gutterBottom>
-              Premium Features Locked
+              {theme.strings.premiumFeaturesLockedMessage}
             </Typography>
             <Typography variant="body1">
-              Upgrade to unlock real-time data and custom watchlists
+              {theme.strings.upgradeToPremiumMessage}
             </Typography>
           </Box>
         </Fade>

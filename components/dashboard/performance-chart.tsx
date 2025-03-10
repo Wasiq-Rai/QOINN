@@ -275,6 +275,7 @@ export function PerformanceChart() {
     ref: any
   ) => {
     const processedData = processChartData(chartData);
+    const { theme } = useTheme();
 
     return (
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
@@ -290,7 +291,7 @@ export function PerformanceChart() {
           mb={2}
         >
           <Typography variant="h4">
-            {isEditable ? "Simulated Performance" : "Real Performance"}
+            {isEditable ? theme.strings.simulatedPerformance : theme.strings.realPerformance}
           </Typography>
           <Box display="flex" gap={1}>
             <IconButton onClick={() => toggleFullscreen("simulated")}>

@@ -21,7 +21,7 @@ const HeroSection = () => {
           <h1 className="font-kigelia text-4xl md:text-6xl font-bold text-white bg-black p-1  mb-4">
             <Typewriter
               options={{
-              strings: [theme.strings.welcomeMessage, 'Your Trustable Investment Platform'],
+              strings: [theme.strings.welcomeMessage, theme.strings.welcomeMessage2],
                 autoStart: true,
                 loop: true,
               }}

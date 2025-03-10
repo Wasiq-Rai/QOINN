@@ -3,6 +3,7 @@ import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import infoCards from '@/actions/InfoCards';
 import { LucideIcon } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const InfoCardSection = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -11,7 +12,7 @@ const InfoCardSection = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startScrollLeft, setStartScrollLeft] = useState(0);
-
+  const { theme } = useTheme();
   const startAutoScroll = () => {
     if (!carouselRef.current) return;
     
@@ -89,7 +90,7 @@ const InfoCardSection = () => {
         <Image src="/img/bg/whirl.svg" fill className="absolute object-cover w-full overflow-visible sm:rotate-90" alt="Background Whirl" />
       </div>
       <div className="w-full z-1 h-full flex items-center justify-center flex-col gap-8 max-w-7xl">
-        <h3 className='font-kigelia text-4xl z-10 md:text-5xl font-bold'>No More Time Wasted!</h3>
+        <h3 className='font-kigelia text-4xl z-10 md:text-5xl font-bold'>{theme.strings.noMoreTimeWasted}</h3>
         <div 
           ref={carouselRef}
           id="carousel"
@@ -105,8 +106,8 @@ const InfoCardSection = () => {
           style={{ userSelect: isDragging ? 'none' : 'auto' }}
         >
           {infoCards.map((infoCard) => (
-            <InfoCard key={infoCard.id} Icon={infoCard.icon} title={infoCard.title}>
-              <p className="font-kigelia text-sm sm:text-base text-center">{infoCard.bodyText}</p>
+            <InfoCard key={infoCard.id} Icon={infoCard.icon} title={theme.strings[`card${infoCard.id}Heading`] || infoCard.title}>
+              <p className="font-kigelia text-sm sm:text-base text-center">{theme.strings[`card${infoCard.id}Desc`] || infoCard.bodyText}</p>
             </InfoCard>
           ))}
         </div>

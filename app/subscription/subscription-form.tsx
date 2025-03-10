@@ -8,6 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import { getEquityStocks } from "@/utils/api";
 import { ApexOptions } from "apexcharts";
+import { useTheme } from "@/context/ThemeContext";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -37,6 +38,7 @@ const SubscriptionForm = () => {
     localStorage.setItem("isPremium", "true");
     checkPremiumStatus(); // Call the function from context to re-evaluate
   };
+  const { theme } = useTheme();
   const { isSignedIn, user, isLoaded } = useUser();
     const [chartData, setChartData] = useState<{
       series: number[];
@@ -64,7 +66,8 @@ const SubscriptionForm = () => {
 
     try {
       const response = await fetch(
-        "https://qoinn-backend-django-production.up.railway.app/api/create-subscription/",
+        "http://localhost:8000/api/create-subscription/",
+        // "https://qoinn-backend-django-production.up.railway.app/api/create-subscription/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -155,10 +158,11 @@ const SubscriptionForm = () => {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Premium Membership
+                {theme.strings.premiumMembership}
               </h2>
               <p className="text-gray-600">
-                Unlock advanced analytics and premium features
+                {theme.strings.unlockFetauresOnSubscriptionCard
+                }
               </p>
               <Chart
                 options={chartOptions}

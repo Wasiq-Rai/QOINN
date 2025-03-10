@@ -1,16 +1,19 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartData } from '@/utils/types'
+import { useTheme } from '@/context/ThemeContext';
 
 interface SimulatedDataChartProps {
   data: ChartData[]
 }
 
 export function SimulatedDataChart({ data }: SimulatedDataChartProps) {
+  const { theme } = useTheme();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Simulated Performance</CardTitle>
+        <CardTitle>{theme.strings.simulatedPerformance}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

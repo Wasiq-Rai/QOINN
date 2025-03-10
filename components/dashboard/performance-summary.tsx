@@ -12,6 +12,7 @@ import {
   TrendingDown as TrendingDownIcon,
   AttachMoney as MoneyIcon
 } from '@mui/icons-material';
+import { useTheme } from '@/context/ThemeContext';
 
 interface PerformanceSummaryProps {
   modelData: number[];
@@ -26,6 +27,7 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
   const percentageChange = (totalChange / initialValue) * 100;
   const dailyChange = modelData[modelData.length - 1] - modelData[modelData.length - 2];
   const dailyPercentageChange = (dailyChange / modelData[modelData.length - 2]) * 100;
+  const { theme } = useTheme();
 
   // Determine color and icon based on performance
   const performanceColor = percentageChange >= 0 ? 'success' : 'error';
@@ -34,7 +36,7 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
   return (
     <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
       <Typography variant="h5" gutterBottom className='font-kigelia'>
-        Model Performance Summary
+        {theme.strings.modelPerformanceSummary}
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={3}>
