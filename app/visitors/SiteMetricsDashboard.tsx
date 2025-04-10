@@ -32,7 +32,6 @@ export const SiteMetricsDashboard = () => {
       const users = await getTotalUsers();
       setAllUsers(users)
       // const logins = await getTotalLogins();
-      // console.log(logins);
 
       setSiteMetrics({
         total_visitors: metrics.total_visitors || 1, // Keep existing value

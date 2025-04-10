@@ -1,6 +1,5 @@
 // /pages/api/news.ts
 export default async function handler(req: any, res: any) {
-    console.log("Hellooooooooooooooo")
     const { tickers } = req.query;
     const NEWS_API_KEY = process.env.NEWS_API_KEY;
     

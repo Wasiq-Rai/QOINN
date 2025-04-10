@@ -91,7 +91,6 @@ export async function scheduleInvestmentMeeting(data: {
 
     slot.isBooked = true
     meetings.push(newMeeting)
-    console.log(slots, meetings)
 
     await writeData({ slots, meetings })
 

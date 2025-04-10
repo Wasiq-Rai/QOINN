@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children }:{children: any}) => {
     const response = await withErrorHandling(themeApi.getActiveTheme);
 
     if (response.success && response.data) {
-      setTheme({ ...defaultTheme, ...response.data });
+      setTheme({ ...response.data });
     } else {
       setError(response.message || "Failed to load theme");
       setTheme(defaultTheme); // Fallback to defaults
@@ -49,7 +49,7 @@ export const ThemeProvider = ({ children }:{children: any}) => {
     const response = await withErrorHandling(() => themeApi.updateTheme(newTheme));
 
     if (response.success && response.data) {
-      setTheme({ ...theme, ...response.data });
+      setTheme({...response.data });
     } else {
       setError(response.message || "Failed to update theme");
     }

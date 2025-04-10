@@ -28,6 +28,14 @@ const api = axios.create({
   },
 });
 
+// For file uploads (different Content-Type)
+const apiMultipart = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -89,7 +97,6 @@ export const getPortfolioSummary = async (): Promise<PortfolioSummary> => {
 
 export const getStocksHistory = async (symbol: string, period: string, interval: string): Promise<any> => {
   const response = await api.get(`/stocks/${symbol}/${period}/${interval}/`);
-  console.log(response)
   return response.data || null;
 };
 
@@ -217,6 +224,156 @@ export const withErrorHandling = async <T>(
       data: null,
       message: "An unexpected error occurred"
     };
+  }
+};
+
+export const uploadMedia = async (file: File, mediaType: 'image' | 'video'): Promise<any> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('mediaType', mediaType);
+
+  try {
+    const response = await api.post('/media/upload/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    // Ensure the URL is absolute
+    let mediaUrl = response.data.mediaUrl;
+    if (!mediaUrl.startsWith('http')) {
+      mediaUrl = `${window.location.origin}${mediaUrl}`;
+    }
+    
+    return { ...response.data, mediaUrl };
+  } catch (error) {
+    console.error('Error uploading media:', error);
+    throw error;
+  }
+};
+
+export const getUploadedImages = async (): Promise<string[]> => {
+  try {
+    const response = await api.get('/media/images/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    throw error;
+  }
+};
+
+// Image Upload API
+export const UploadImage = async (file: File): Promise<{ imageUrl: string }> => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await apiMultipart.post('/upload-image/', formData);
+  return response.data;
+};
+
+
+export const updateTeamMemberImage = async (memberName: string, imageUrl: string): Promise<void> => {
+  try {
+    await api.patch('/team/update-image/', {
+      memberName,
+      imageUrl
+    });
+  } catch (error) {
+    console.error('Error updating team member image:', error);
+    throw error;
+  }
+};
+
+export const subscribeToNewsLetter = async (email: string): Promise<any> => {
+  try {
+    const response = await api.post('/newsletter/subscribe/', {
+      email,
+    });
+    console.log(response)
+    return response
+  } catch (error) {
+    console.error("Error subscribing to news letter for user: ", email, error);
+    return error;
+  }
+};
+
+export const fetchNewsLetterSubscribers = async (): Promise<any> => {
+  try {
+    const response = await api.get('/newsletter/subscribers/');
+    console.log(response)
+    return response.data
+  } catch (error) {
+    console.error("Failed to fetch subscribers: ", error);
+    return error;
+  }
+};
+export const toggleNewsLetterSubscriptionStatus = async (id: number): Promise<any> => {
+  try {
+    const response = await api.patch(`/newsletter/subscribers/${id}/toggle/`);
+    console.log(response)
+    return response.data
+  } catch (error) {
+    console.error("Failed to update subscriber: ", error);
+    return error;
+  }
+};
+
+export const deleteNewsLetterSubscriber = async (id: number): Promise<any> => {
+  try {
+    const response = await api.delete(`/newsletter/subscribers/${id}/`);
+    return response;
+  } catch (error) {
+    console.error('Error deleting subscriber:', error);
+    return false;
+  }
+};
+
+export const addNewsLetterSubscriber = async (email: string): Promise<any | null> => {
+  try {
+    const response = await api.post('/newsletter/subscribers/', {
+       email
+    });
+    
+    if (!response) throw new Error('Failed to add subscriber');
+    return await response.data;
+  } catch (error) {
+    console.error('Error adding subscriber:', error);
+    throw error;
+  }
+};
+
+export const checkSubscriptionStatus = async (email: string): Promise<{
+  isSubscribed: boolean;
+  isActive: boolean;
+}> => {
+  try {
+    const response = await api.get(`/newsletter/status?email=${encodeURIComponent(email)}`);
+    if (!response.data) throw new Error('Failed to check status');
+    return await response.data;
+  } catch (error) {
+    console.error('Error checking subscription status:', error);
+    throw error;
+  }
+};
+
+export const unsubscribeFromNewsLetter = async (email: string): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    const response = await api.post('/newsletter/unsubscribe', {
+      email
+    });
+    
+    if (!response.data) {
+      const errorData = await response.data;
+      throw new Error(errorData.message || 'Unsubscribe failed');
+    }
+    
+    return await response.data;
+  } catch (error) {
+    console.error('Error unsubscribing:', error);
+    throw error;
   }
 };
 

@@ -93,7 +93,6 @@ const SubscriptionForm = () => {
       const fetchData = async () => {
         try {
           const response = await getEquityStocks();
-          console.log(response)
           const data: EquityStocks =  response.data;
           
           const totalEquity = data.stocks.reduce((sum, stock) => sum + stock.equity, 0);

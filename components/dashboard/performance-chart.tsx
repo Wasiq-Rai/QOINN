@@ -39,7 +39,6 @@ import { getPerformanceData, TIMELINE_CONFIGS } from "@/utils/api";
 import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
-import { useEquity } from "@/context/EquityContext";
 import { useAdmin } from "@/context/AdminContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -49,10 +48,9 @@ const LINE_COLORS = {
   VOO: "#ffa726", // Orange
 };
 
-export function PerformanceChart() {
-  const {theme } = useTheme();
-  const { equityPercentage } = useEquity();
+const PerformanceChart = () => {
   const {isAdmin} = useAdmin();
+  const { theme } = useTheme();
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
   const [activeModel, setActiveModel] = useState("M15");
@@ -272,10 +270,10 @@ export function PerformanceChart() {
   const renderPerformanceChart = (
     chartData: ChartData,
     isEditable: boolean = false,
-    ref: any
+    ref: any,
+    theme: any
   ) => {
     const processedData = processChartData(chartData);
-    const { theme } = useTheme();
 
     return (
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
@@ -527,11 +525,11 @@ export function PerformanceChart() {
 
           <Grid item xs={12}>
             {simulatedData &&
-              renderPerformanceChart(simulatedData, true, simulatedChartRef)}
+              renderPerformanceChart(simulatedData, true, simulatedChartRef, theme)}
           </Grid>
 
           <Grid item xs={12}>
-            {realData && renderPerformanceChart(realData, false, realChartRef)}
+            {realData && renderPerformanceChart(realData, false, realChartRef, theme)}
           </Grid>
         </Grid>
       </Box>

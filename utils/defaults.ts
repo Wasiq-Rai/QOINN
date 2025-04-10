@@ -59,14 +59,14 @@ export const defaultTheme: ThemeContent = {
       "Unlock your financial potential with QOINN's innovative investment solutions.",
     learnMore: "Learn More",
     ourTeam: "Our Team",
-    teamMember1Name: "Sameul",
-    teamMember1Designation: "Founder & CEO",
+    teamMember1Name: "Wei-Hsiang Peng",
+    teamMember1Designation: "Co-Founder / CEO / Software Developer",
     teamMember1Description:
-      "John has over 15 years of experience in quantitative finance and machine learning.",
-    teamMember2Name: "Jane Smith",
-    teamMember2Designation: "Lead Developer",
+      "UIUC -- M.S. in Physics",
+    teamMember2Name: "Po-Wei Peng",
+    teamMember2Designation: "Co-Founder / Consultant",
     teamMember2Description:
-      "Jane is an expert in algorithmic trading and high-frequency systems.",
+      "Software Engineer at Amazon",
     QOINNPerformanceDashboard: "QOINN Performance Dashboard",
     frequentlyAskedQuestions: "Frequently asked questions",
     faqsDescription:
