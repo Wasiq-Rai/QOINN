@@ -72,7 +72,7 @@ export function Newsletter() {
         isActive: response.data.is_active
       });
       
-      toast.success("Successfully subscribed to our newsletter!", {
+      toast.success("Successfully subscribed to our newsletter!😍", {
         description: "You'll receive our latest updates and insights."
       });
     } catch (error: any) {
