@@ -66,8 +66,8 @@ const SubscriptionForm = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/api/create-subscription/",
-        // "https://qoinn-backend-django-production.up.railway.app/api/create-subscription/",
+        // "http://localhost:8000/api/create-subscription/",
+        "https://qoinn-backend-django-production.up.railway.app/api/create-subscription/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
