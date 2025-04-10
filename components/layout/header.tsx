@@ -20,16 +20,15 @@ export function Header() {
             <Image
               src="/img/logo/logo.png"
               alt="QOINN Logo"
-              width={80}
+              width={76}
               height={80}
-              className="rounded-full mt-[15px]"
+              className="p-[10px]"
             />
             <Image
               src="/img/logo/logo-name.png"
               alt="QOINN Logo"
               width={200}
               height={200}
-              className="rounded-full"
             />
           </Link>
         </div>
@@ -80,7 +79,7 @@ export function Header() {
                   <span>{user.fullName}</span>
                 </Link>
               )}
-              <UserButton afterSignOutUrl="/sign-in" />
+              <UserButton afterSignOutUrl="/dashboard" />
             </SignedIn>
           </nav>
         </div>

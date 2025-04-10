@@ -170,6 +170,8 @@ export default function InvestmentForm() {
             <img 
                   src="/img/logo/logo-name.png" 
                   alt="QOINN Logo" 
+                  width="auto"
+                  height="auto"
                   style={{ maxWidth: 250, marginBottom: 16, paddingTop: "20px" }}
                 />
           </Grid>
