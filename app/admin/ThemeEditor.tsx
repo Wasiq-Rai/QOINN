@@ -167,8 +167,8 @@ export const ThemeEditor = () => {
 
       <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} className="mb-4">
         <Tab label="Strings" />
-        <Tab label="Colors" />
-        <Tab label="Images" />
+        {/* <Tab label="Colors" />
+        <Tab label="Images" /> */}
       </Tabs>
 
       <Box className="mb-4 flex justify-end">
@@ -181,7 +181,7 @@ export const ThemeEditor = () => {
         </Button>
       </Box>
 
-      <Box className="mt-4">
+      <Box className="mt-4 max-h-[500px] overflow-auto">
         {activeTab === 0 && (
           <Grid container spacing={3}>
             {Object.entries(editedTheme.strings).map(([key, value]) => (
