@@ -18,6 +18,7 @@ export const defaultTheme: ThemeContent = {
     stockSelectionProcess: "Stock Selection Process",
     stockSeectionProcessDescription:
       "What if we can choose the stocks with upward trends and wrap them up to create a smaller batch fund? As the day progresses and certain stocks lose their momentum and begin to decline, QOINN dynamically replaces those underperforming stocks (marked in red) with others that are gaining momentum, ensuring optimal portfolio.",
+    stockSelectionProcess2: "As the day progresses and certain stocks lose their momentum and begin to decline, QOINN dynamically replaces those underperforming stocks (marked in red) with others that are gaining momentum, ensuring optimal portfolio performance.",
     portfolioOptimization: "Portfolio Optimization",
     selectedStocks: "Selected Stocks",
     optimizationMetrics: "Optimization Metrics",
