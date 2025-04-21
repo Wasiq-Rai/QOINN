@@ -1,5 +1,5 @@
-'use client'
-import { useTheme } from '@/context/ThemeContext';
+"use client";
+import { useTheme } from "@/context/ThemeContext";
 
 const StockSelectionProcess = () => {
   const { theme } = useTheme();
@@ -193,7 +193,9 @@ const StockSelectionProcess = () => {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold">{theme.strings.stockSelectionProcess}</h1>
+        <h1 className="text-2xl font-bold">
+          {theme.strings.stockSelectionProcess}
+        </h1>
       </div>
       <p className="text-gray-600 mb-6">
         {theme.strings.stockSeectionProcessDescription}
@@ -247,18 +249,24 @@ const StockSelectionProcess = () => {
       <div className="mb-8">
         <div className="flex justify-between">
           {middleRowStocks.map((stock, index) => (
-            <div
-              key={`middle-${stock.id}`}
-              className="flex flex-col items-center"
-            >
-              <StockGraph trend={stock.trend} />
-              <div className="text-blue-700 font-medium mt-1">{stock.name}</div>
-              <div className="text-blue-700 font-medium">
-                Index: {stock.value}
+            <div className="flex">
+              <div
+                key={`middle-${stock.id}`}
+                className="flex flex-col items-center"
+              >
+                <StockGraph trend={stock.trend} />
+                <div className="text-blue-700 font-medium mt-1">
+                  {stock.name}
+                </div>
+                <div className="text-blue-700 font-medium">
+                  Index: {stock.value}
+                </div>
               </div>
-              {index === 4 && index < middleRowStocks.length - 1 && (
-                <div className="text-blue-700 text-2xl mx-6">...</div>
-              )}
+              <div className="self-center pb-8">
+                {index === 4 && index < middleRowStocks.length - 1 && (
+                  <div className="text-blue-700 text-2xl ml-[3.5rem]">...</div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -273,18 +281,24 @@ const StockSelectionProcess = () => {
       <div className="mb-16">
         <div className="flex justify-between">
           {bottomRowStocks.map((stock, index) => (
-            <div
-              key={`bottom-${stock.id}`}
-              className="flex flex-col items-center"
-            >
-              <StockGraph trend={stock.trend} />
-              <div className="text-blue-700 font-medium mt-1">{stock.name}</div>
-              <div className="text-blue-700 font-medium">
-                Index: {stock.value}
+            <div className="flex">
+              <div
+                key={`bottom-${stock.id}`}
+                className="flex flex-col items-center"
+              >
+                <StockGraph trend={stock.trend} />
+                <div className="text-blue-700 font-medium mt-1">
+                  {stock.name}
+                </div>
+                <div className="text-blue-700 font-medium">
+                  Index: {stock.value}
+                </div>
               </div>
-              {index === 3 && index < bottomRowStocks.length - 1 && (
-                <div className="text-blue-700 text-2xl mx-6">...</div>
-              )}
+              <div className="self-center pb-8">
+                {index === 3 && index < bottomRowStocks.length - 1 && (
+                  <div className="text-blue-700 text-2xl ml-[3.5rem]">...</div>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -35,6 +35,7 @@ import { getStocks } from "@/utils/api";
 import { indicators, Stock } from "@/utils/types";
 import TradingViewWidget from "./Charts/TradingViewWidget";
 import { useTheme } from "@/context/ThemeContext";
+import { useUser } from "@clerk/nextjs";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-10px); }
@@ -97,6 +98,8 @@ const compulsorySymbols = ["^GSPC", "^IXIC", "^DJI", "^TNX"];
 
 export function StockList() {
   const { isPremium } = usePremium();
+  const { isSignedIn } = useUser();
+
   const [stocks, setStocks] = useState<{ [key: string]: Stock } | undefined>();
   const [showSubscription, setShowSubscription] = useState(false);
   const [userSymbols, setUserSymbols] = useState<string[]>([]);
@@ -169,7 +172,7 @@ export function StockList() {
   return (
     <Box sx={{ position: "relative", width: "100%" }}>
       <StyledTableContainer component={Paper}>
-        {!isPremium && (
+        {!isPremium && !isSignedIn && (
           <PremiumOverlay onClick={() => setShowSubscription(true)}>
             <Lock fontSize="large" sx={{ mb: 2, fontSize: 64 }} />
             <Typography variant="h4" gutterBottom>
@@ -252,7 +255,7 @@ export function StockList() {
               ))}
             </Box>
 
-            {!isPremium && (
+            {!isPremium && !isSignedIn && (
               <Box
                 position="absolute"
                 top={0}

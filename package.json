@@ -62,6 +62,7 @@
     "framer-motion": "^12.6.3",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
+    "my-v0-project": "file:",
     "next": "^14.2.3",
     "next-themes": "latest",
     "nodemailer": "^6.9.16",
