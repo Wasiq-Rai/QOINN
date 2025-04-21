@@ -289,7 +289,6 @@ export const subscribeToNewsLetter = async (email: string): Promise<any> => {
     const response = await api.post('/newsletter/subscribe/', {
       email,
     });
-    console.log(response)
     return response
   } catch (error) {
     console.error("Error subscribing to news letter for user: ", email, error);
@@ -300,7 +299,6 @@ export const subscribeToNewsLetter = async (email: string): Promise<any> => {
 export const fetchNewsLetterSubscribers = async (): Promise<any> => {
   try {
     const response = await api.get('/newsletter/subscribers/');
-    console.log(response)
     return response.data
   } catch (error) {
     console.error("Failed to fetch subscribers: ", error);
@@ -310,7 +308,6 @@ export const fetchNewsLetterSubscribers = async (): Promise<any> => {
 export const toggleNewsLetterSubscriptionStatus = async (id: number): Promise<any> => {
   try {
     const response = await api.patch(`/newsletter/subscribers/${id}/toggle/`);
-    console.log(response)
     return response.data
   } catch (error) {
     console.error("Failed to update subscriber: ", error);
