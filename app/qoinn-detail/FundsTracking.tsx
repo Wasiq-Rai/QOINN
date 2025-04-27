@@ -1,44 +1,191 @@
-import { useState } from "react";
-const IndexFundTracking = () => {
-  // Data for the stocks
-  const stocks = [
-    { id: 1, name: "stock1", value: 1.6, trend: "up" },
-    { id: 2, name: "stock2", value: 1.2, trend: "down" },
-    { id: 3, name: "stock3", value: 0.8, trend: "up" },
-    { id: 4, name: "stock4", value: 0.7, trend: "up" },
-    { id: 5, name: "stock5", value: 0.3, trend: "down" },
-    { id: 6, name: "stockN", value: 0.02, trend: "up" },
-  ];
+"use client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useTheme } from "@/context/ThemeContext";
+import { getStocksHistory } from "@/utils/api";
+import { TrendingDown, TrendingUp } from "@mui/icons-material";
+import { format } from "date-fns";
+import { Loader } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-  const StockGraph = ({ trend }: { trend: string }) => {
-    // SVG paths for up and down trends
-    const upTrendPath = "M10,50 Q30,20 50,30 T90,10";
-    const downTrendPath = "M10,10 Q30,50 50,30 T90,50";
+interface StockData {
+  time: number;
+  value: number;
+  change?: number;
+}
 
-    return (
-      <div className="w-32 h-32 relative">
-        {/* Axes */}
-        <div className="absolute top-0 w-1 h-full bg-blue-700"></div>
-        <div className="absolute left-0 bottom-0 w-full h-1 bg-blue-700"></div>
-        {/* Arrow tops */}
-        <div className="absolute -left-[6px] top-0 w-4 h-4 border-t-4 border-l-4 border-blue-700 transform rotate-45"></div>
-        <div className="absolute right-0 -bottom-[6px] w-4 h-4 border-b-4 border-r-4 border-blue-700 transform -rotate-45"></div>
+interface Stock {
+  id: string;
+  name: string;
+  symbol: string;
+  price: number;
+  change: number;
+  history: StockData[];
+}
 
-        {/* Graph line */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 60">
-          <path
-            d={trend === "up" ? upTrendPath : downTrendPath}
-            stroke={trend === "up" ? "#22c55e" : "#dc2626"}
-            strokeWidth="4"
-            fill="none"
-          />
-        </svg>
-      </div>
-    );
-  };
+const CustomTooltip: React.FC<{
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}> = ({ active, payload, label }) => {
+  if (!active || !payload?.[0]) return null;
+  return (
+    <div className="bg-white p-2 border rounded shadow-lg">
+      <p className="text-blue-600">Value: {payload[0].value.toFixed(2)}</p>
+      {payload[0].payload.dailyChange && (
+        <p
+          className={
+            payload[0].payload.dailyChange > 0
+              ? "text-green-600"
+              : "text-red-600"
+          }
+        >
+          Change: {(payload[0].payload.dailyChange * 100).toFixed(2)}%
+        </p>
+      )}
+      <p>Date: {payload[0].payload.time}</p>
+    </div>
+  );
+};
+
+const StockChart: React.FC<{
+  data: StockData[];
+  height?: string | number;
+  showAxes?: boolean;
+  animated?: boolean;
+  color?: string;
+}> = ({
+  data,
+  height = "100%",
+  showAxes = true,
+  animated = false,
+  color = "#2563eb",
+}) => {
+  const [animatedData, setAnimatedData] = useState<StockData[]>([]);
+
+  useEffect(() => {
+    if (animated) {
+      setAnimatedData([]);
+      const interval = setInterval(() => {
+        setAnimatedData((prev) => {
+          if (prev.length >= data.length) {
+            clearInterval(interval);
+            return prev;
+          }
+          return [...prev, data[prev.length]];
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [data, animated]);
 
   return (
-    <div className="mx-auto p-6">
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={animated ? animatedData : data}>
+        {showAxes && <CartesianGrid strokeDasharray="3 3" />}
+        {showAxes && <XAxis dataKey="time" />}
+        {showAxes && <YAxis domain={["auto", "auto"]} />}
+        <Tooltip content={<CustomTooltip />} />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke={color}
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive={true}
+          animationDuration={1000}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+};
+
+const IndexFundTracking = () => {
+  const { theme } = useTheme();
+
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStockData = async () => {
+      try {
+        // Map symbols to their proper names
+        const symbolToName: Record<string, string> = {
+          "SPY": "S&P 500 ETF",
+          "VOO": "Vanguard S&P 500 ETF",
+          "^DJI": "Dow Jones Industrial Average"
+        };
+    
+        const symbols = ["SPY", "VOO", "^DJI"];
+        const period = "2y"; 
+        const interval = "1d"; 
+    
+        const stockData = await Promise.all(
+          symbols.map(async (symbol) => {
+            const response = await getStocksHistory(symbol, period, interval);
+            const data = response;
+            
+            const historyWithDailyChanges = data.map((entry: any, index: number) => {
+              if (index === 0) {
+                return {
+                  time: format(new Date(entry.Date), 'MMM d, yyyy'),
+                  value: entry.Close,
+                  change: 0,
+                  dailyChange: 0
+                };
+              }
+              
+              const prevClose = data[index - 1].Close;
+              const dailyChange = ((entry.Close - prevClose) / prevClose) * 100;
+              
+              return {
+                time: format(new Date(entry.Date), 'MMM d, yyyy'),
+                value: entry.Close,
+                change: ((entry.Close - data[0].Close) / data[0].Close) * 100,
+                dailyChange: dailyChange
+              };
+            });
+    
+            return {
+              id: symbol,
+              name: symbolToName[symbol] || symbol, // Use proper name if available
+              symbol: symbol,
+              price: data[data.length - 1].Close,
+              change: historyWithDailyChanges[historyWithDailyChanges.length - 1].dailyChange,
+              history: historyWithDailyChanges,
+            };
+          })
+        );
+        setStocks(stockData);
+      } catch (err) {
+        console.log(err);
+        setError("Failed to fetch stock data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStockData();
+  }, []);
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-lg mx-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 bg-blue-900 rounded-md flex items-center justify-center">
           <svg
@@ -56,38 +203,50 @@ const IndexFundTracking = () => {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold">Index Fund Tracking</h1>
+        <h1 className="text-2xl font-bold">
+          {theme.strings.indexFundTracking}
+        </h1>
       </div>
 
       <p className="text-gray-600 mb-6">
-        An index assigns weights to stocks based on factors like market
-        capitalization, stock price, or equal weighting. Index funds then
-        distribute investments proportionally to these weights, ensuring the
-        fund's performance closely tracks the index. However, not all funds are
-        in a good period with upward trends and momentum like the red ones down.
+        {theme.strings.indexFundTrackingDescription}
       </p>
 
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        {stocks.map((stock, index) => (
-          <div className="flex">
-            <div key={stock.id} className="flex flex-col items-center">
-              <StockGraph trend={stock.trend} />
-              <div className="text-blue-700 font-medium mt-2">{stock.name}</div>
-              <div className="text-blue-700 font-medium">
-                Index: {stock.value}
-              </div>
-            </div>
-            <div className="self-center pb-8">
-              {/* Show ellipsis between stock5 and stockN */}
-              {index === 4 && (
-                <div className="text-blue-700 text-2xl font-bold ml-[3.5rem]">
-                  ...
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+      <div className="h-full w-full justify-center">
+        <Image
+          unoptimized
+          quality={100}
+          width={0}
+          height={0}
+          src="/img/charts/index-fund-tracking.png"
+          alt="Index Funds Tracking"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        />
       </div>
+      {loading ? (
+        <div className="flex justify-center p-6 w-full">
+          <Loader />
+        </div>
+      ) : (
+        <Card className="w-full">
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              {stocks.map((stock) => (
+                <div key={stock.id} className="space-y-2">
+                  <h3 className="font-semibold">{stock.name}</h3>
+                  <p className="text-sm text-gray-600">{stock.symbol}</p>
+                  <div className="h-48">
+                    <StockChart data={stock.history} animated={isPlaying} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

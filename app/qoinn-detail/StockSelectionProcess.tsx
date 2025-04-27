@@ -1,5 +1,6 @@
 "use client";
 import { useTheme } from "@/context/ThemeContext";
+import Image from "next/image";
 
 const StockSelectionProcess = () => {
   const { theme } = useTheme();
@@ -64,118 +65,8 @@ const StockSelectionProcess = () => {
     );
   };
 
-  const ReplacementSection = () => {
-    return (
-      <div className="relative h-64 w-full">
-        {/* Diagonal arrow pointing up-right to stock6 */}
-        <svg
-          className="absolute left-[30%] -top-10 w-36 h-48"
-          viewBox="0 0 100 120"
-        >
-          <defs>
-            <marker
-              id="arrowhead2"
-              markerWidth="10"
-              markerHeight="7"
-              refX="7"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#1e3a8a" />
-            </marker>
-          </defs>
-          <path
-            d="M40,90 L60,20"
-            stroke="#1e3a8a"
-            strokeWidth="4"
-            fill="none"
-            markerEnd="url(#arrowhead2)"
-          />
-        </svg>
-
-        {/* Diagonal arrow pointing down-right to stock4 */}
-        <svg
-          className="absolute left-[35%] -top-10 w-36 h-48"
-          viewBox="0 0 100 120"
-        >
-          <defs>
-            <marker
-              id="arrowhead3"
-              markerWidth="10"
-              markerHeight="7"
-              refX="7"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#1e3a8a" />
-            </marker>
-          </defs>
-          <path
-            d="M40,20 L60,90"
-            stroke="#1e3a8a"
-            strokeWidth="4"
-            fill="none"
-            markerEnd="url(#arrowhead3)"
-          />
-        </svg>
-
-        {/* Stock6 with tilted chart and label */}
-        <div className="absolute left-[28%] bottom-0 flex flex-col items-center">
-          <div className="w-32 h-32 relative transform -rotate-12">
-            {/* Axes */}
-            <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-700"></div>
-            <div className="absolute left-0 bottom-0 w-full h-0.5 bg-blue-700"></div>
-
-            {/* Arrow tops */}
-            <div className="absolute -left-[6px] top-0 w-3 h-3 border-t-[3px] border-l-[3px] border-blue-700 transform rotate-45"></div>
-            <div className="absolute right-0 -bottom-[6px] w-3 h-3 border-b-[3px] border-r-[3px] border-blue-700 transform -rotate-45"></div>
-
-            <svg
-              className="absolute inset-0 w-full h-full"
-              viewBox="0 0 100 60"
-            >
-              <path
-                d="M10,50 Q30,20 50,30 T90,10"
-                stroke="#22c55e"
-                strokeWidth="3"
-                fill="none"
-              />
-            </svg>
-          </div>
-          <div className="text-blue-700 font-medium -rotate-12">stock6</div>
-        </div>
-
-        {/* Stock4 with tilted chart and label */}
-        <div className="absolute left-[42%] bottom-0 flex flex-col items-center">
-          <div className="w-32 h-32 relative transform rotate-12">
-            {/* Axes */}
-            <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-700"></div>
-            <div className="absolute left-0 bottom-0 w-full h-0.5 bg-blue-700"></div>
-
-            {/* Arrow tops */}
-            <div className="absolute -left-[6px] top-0 w-3 h-3 border-t-[3px] border-l-[3px] border-blue-700 transform rotate-45"></div>
-            <div className="absolute right-0 -bottom-[6px] w-3 h-3 border-b-[3px] border-r-[3px] border-blue-700 transform -rotate-45"></div>
-
-            <svg
-              className="absolute inset-0 w-full h-full"
-              viewBox="0 0 100 60"
-            >
-              <path
-                d="M10,10 Q30,50 50,30 T90,50"
-                stroke="#dc2626"
-                strokeWidth="3"
-                fill="none"
-              />
-            </svg>
-          </div>
-          <div className="text-blue-700 font-medium rotate-12">stock4</div>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="mx-auto p-6">
+    <div className="p-6 bg-white rounded-lg shadow-lg mx-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 bg-blue-900 rounded-md flex items-center justify-center">
           <svg
@@ -277,36 +168,11 @@ const StockSelectionProcess = () => {
         {theme.strings.stockSelectionProcess2}
       </p>
 
-      {/* Bottom row with replacement arrows */}
-      <div className="mb-16">
-        <div className="flex justify-between">
-          {bottomRowStocks.map((stock, index) => (
-            <div className="flex">
-              <div
-                key={`bottom-${stock.id}`}
-                className="flex flex-col items-center"
-              >
-                <StockGraph trend={stock.trend} />
-                <div className="text-blue-700 font-medium mt-1">
-                  {stock.name}
-                </div>
-                <div className="text-blue-700 font-medium">
-                  Index: {stock.value}
-                </div>
-              </div>
-              <div className="self-center pb-8">
-                {index === 3 && index < bottomRowStocks.length - 1 && (
-                  <div className="text-blue-700 text-2xl ml-[3.5rem]">...</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Replacement arrows and additional stock charts */}
-      <div className="relative -mt-40">
-        <ReplacementSection />
+      <div className="h-full w-full justify-center">
+        <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection.png" alt="Index Funds Tracking" style={{
+          width: "100%",
+          height: "100%"
+        }}/>
       </div>
     </div>
   );
