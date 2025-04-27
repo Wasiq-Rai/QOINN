@@ -104,6 +104,7 @@ export function TeamSection() {
               <h3 className="font-bold text-lg">{member.name}</h3>
               <p className="text-sm text-gray-500 mb-2">{member.role}</p>
               <p className="text-sm">{member.bio}</p>
+              <p className="text-sm">{member.bio}</p>
             </CardContent>
 
             {isAdmin && selectedMember === index && (
