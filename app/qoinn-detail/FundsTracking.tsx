@@ -212,7 +212,7 @@ const IndexFundTracking = () => {
         {theme.strings.indexFundTrackingDescription}
       </p>
 
-      <div className="h-full w-full justify-center">
+      <div className="flex h-full w-full justify-center">
         <Image
           unoptimized
           quality={100}
@@ -221,7 +221,7 @@ const IndexFundTracking = () => {
           src="/img/charts/index-fund-tracking.png"
           alt="Index Funds Tracking"
           style={{
-            width: "100%",
+            width: "60%",
             height: "100%",
           }}
         />

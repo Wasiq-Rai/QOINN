@@ -93,74 +93,19 @@ const StockSelectionProcess = () => {
       </p>
 
       {/* First row of stocks with "Selected" labels */}
-      <div className="mb-10">
-        <div className="flex justify-between mb-1">
-          {topRowStocks.map((stock, index) => (
-            <div
-              key={`top-${stock.id}`}
-              className="flex flex-col items-center justify-center"
-            >
-              {stock.selected && (
-                <div className="text-red-400 font-medium mb-2">Selected</div>
-              )}
-              {!stock.selected && <div className="mb-6"></div>}
-              {index === 4 && index < topRowStocks.length - 1 && (
-                <div className="text-blue-700 text-2xl mx-6">{` `}</div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-between">
-          {topRowStocks.map((stock, index) => (
-            <div className="flex">
-              <div
-                key={`top-graph-${stock.id}`}
-                className="flex flex-col items-center"
-              >
-                <StockGraph trend={stock.trend} selected={stock.selected} />
-                <div className="text-blue-700 font-medium mt-1">
-                  {stock.name}
-                </div>
-                <div className="text-blue-700 font-medium">
-                  Index: {stock.value}
-                </div>
-              </div>
-              <div className="self-center pb-8">
-                {index === 4 && index < topRowStocks.length - 1 && (
-                  <div className="text-blue-700 text-2xl ml-[3.5rem]">...</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex h-full w-full justify-center mb-10">
+      <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-1.png" alt="Index Funds Tracking" style={{
+          width: "60%",
+          height: "100%"
+        }}/>
       </div>
 
       {/* Middle row of stocks - all uptrend */}
-      <div className="mb-8">
-        <div className="flex justify-between">
-          {middleRowStocks.map((stock, index) => (
-            <div className="flex">
-              <div
-                key={`middle-${stock.id}`}
-                className="flex flex-col items-center"
-              >
-                <StockGraph trend={stock.trend} />
-                <div className="text-blue-700 font-medium mt-1">
-                  {stock.name}
-                </div>
-                <div className="text-blue-700 font-medium">
-                  Index: {stock.value}
-                </div>
-              </div>
-              <div className="self-center pb-8">
-                {index === 4 && index < middleRowStocks.length - 1 && (
-                  <div className="text-blue-700 text-2xl ml-[3.5rem]">...</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex h-full w-full justify-center mb-8">
+      <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-2.png" alt="Index Funds Tracking" style={{
+          width: "60%",
+          height: "100%"
+        }}/>
       </div>
 
       {/* Explanation text in the middle */}
@@ -168,9 +113,9 @@ const StockSelectionProcess = () => {
         {theme.strings.stockSelectionProcess2}
       </p>
 
-      <div className="h-full w-full justify-center">
-        <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection.png" alt="Index Funds Tracking" style={{
-          width: "100%",
+      <div className="flex h-full w-full justify-center">
+        <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-3.png" alt="Index Funds Tracking" style={{
+          width: "60%",
           height: "100%"
         }}/>
       </div>
