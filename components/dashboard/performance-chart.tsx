@@ -49,22 +49,37 @@ const LINE_COLORS = {
 };
 
 const PerformanceChart = () => {
-  const {isAdmin} = useAdmin();
+  const { isAdmin } = useAdmin();
   const { theme } = useTheme();
+  // Separate state for each chart
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
+
   const [activeModel, setActiveModel] = useState("M15");
   const [activeTimeline, setActiveTimeline] = useState("2y");
-  const [editMode, setEditMode] = useState(false);
+
+  // Separate edit modes
+  const [simulatedEditMode, setSimulatedEditMode] = useState(false);
+  const [realEditMode, setRealEditMode] = useState(false);
+
+  // Separate model data for each chart
   const [simulatedModelData, setSimulatedModelData] = useState<number[]>([]);
+  const [realModelData, setRealModelData] = useState<number[]>([]);
+
+  // Separate normalized data for each chart
   const [simulatedNormalizedModelData, setSimulatedNormalizedModelData] =
     useState<number[]>([]);
+  const [realNormalizedModelData, setRealNormalizedModelData] = useState<
+    number[]
+  >([]);
+
   const [dataType, setDataType] = useState<"percentage" | "absolute">(
     "absolute"
   );
   const [absoluteMode, setAbsoluteMode] = useState<
     "normalized" | "unnormalized"
   >("normalized");
+
   const simulatedChartRef = useRef<HTMLDivElement>(null);
   const realChartRef = useRef<HTMLDivElement>(null);
   const [fullscreenChart, setFullscreenChart] = useState<
@@ -99,11 +114,21 @@ const PerformanceChart = () => {
     try {
       const response = await getPerformanceData(model, timeline);
 
-      setSimulatedData(response);
-      setRealData(response);
-      setSimulatedModelData(response.model[0]);
-      const normalizedModelData = normalize(response);
-      setSimulatedNormalizedModelData(normalizedModelData);
+      // Create deep copies for each chart
+      const simulatedCopy = JSON.parse(JSON.stringify(response));
+      const realCopy = JSON.parse(JSON.stringify(response));
+
+      setSimulatedData(simulatedCopy);
+      setRealData(realCopy);
+
+      setSimulatedModelData(simulatedCopy.model[0]);
+      setRealModelData(realCopy.model[0]);
+
+      const simulatedNormData = normalize(simulatedCopy);
+      const realNormData = normalize(realCopy);
+
+      setSimulatedNormalizedModelData(simulatedNormData);
+      setRealNormalizedModelData(realNormData);
     } catch (error) {
       console.error("Error fetching performance data:", error);
     }
@@ -114,13 +139,19 @@ const PerformanceChart = () => {
   }, [activeModel, activeTimeline]);
 
   // Process chart data
-  const processChartData = (data: ChartData) => {
+  const processChartData = (
+    data: ChartData,
+    chartType: "simulated" | "real"
+  ) => {
     if (!data) return [];
     const modelValues = data?.model ? data?.model[0] : [];
-
     const isPercentage = dataType === "percentage";
 
-    const normalizedModel = normalize(data);
+    // Get the correct normalized data based on chart type
+    const normalizedData =
+      chartType === "simulated"
+        ? simulatedNormalizedModelData
+        : realNormalizedModelData;
 
     const processedData = data.dates.map((date, index) => ({
       date,
@@ -133,7 +164,7 @@ const PerformanceChart = () => {
       Model: isPercentage
         ? (modelValues[index] / modelValues[0] - 1) * 100
         : absoluteMode === "normalized"
-        ? simulatedNormalizedModelData[index]
+        ? normalizedData[index]
         : modelValues[index],
     }));
 
@@ -179,8 +210,7 @@ const PerformanceChart = () => {
     }
   };
 
-  // Handle data editing
-  const handleDataEdit = (index: number, value: string) => {
+  const handleSimulatedDataEdit = (index: number, value: string) => {
     const newData = [...simulatedModelData];
     newData[index] = Number(value);
     setSimulatedModelData(newData);
@@ -194,7 +224,7 @@ const PerformanceChart = () => {
     }
   };
 
-  const handleNormalizedDataEdit = (index: number, value: string) => {
+  const handleSimulatedNormalizedDataEdit = (index: number, value: string) => {
     const newData = [...simulatedNormalizedModelData];
     newData[index] = Number(value);
     setSimulatedNormalizedModelData(newData);
@@ -208,42 +238,49 @@ const PerformanceChart = () => {
     }
   };
 
-  useEffect(() => {
-    switch (absoluteMode) {
-      case "normalized":
-        const newNormData = [...simulatedNormalizedModelData];
-        if (simulatedData) {
-          const updatedChartData = {
-            ...simulatedData,
-            model: [newNormData],
-          };
-          setSimulatedData(updatedChartData);
-        }
-        return;
-      case "unnormalized":
-        const newData = [...simulatedModelData];
-        if (simulatedData) {
-          const updatedChartData = {
-            ...simulatedData,
-            model: [newData],
-          };
-          setSimulatedData(updatedChartData);
-        }
-        return;
-    }
-  }, [absoluteMode]);
+  // Real chart edit handlers
+  const handleRealDataEdit = (index: number, value: string) => {
+    const newData = [...realModelData];
+    newData[index] = Number(value);
+    setRealModelData(newData);
 
-  // File upload handler
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (realData) {
+      const updatedChartData = {
+        ...realData,
+        model: [newData],
+      };
+      setRealData(updatedChartData);
+    }
+  };
+
+  const handleRealNormalizedDataEdit = (index: number, value: string) => {
+    const newData = [...realNormalizedModelData];
+    newData[index] = Number(value);
+    setRealNormalizedModelData(newData);
+
+    if (realData) {
+      const updatedChartData = {
+        ...realData,
+        model: [newData],
+      };
+      setRealData(updatedChartData);
+    }
+  };
+
+  // Separate file upload handlers
+  const handleSimulatedFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
+    console.log(file)
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         const uploadedData = content
-          .split(/[,\s]+/) // Split by commas or spaces
-          .map((value) => parseFloat(value)) // Convert to numbers
-          .filter((value) => !isNaN(value)); // Filter out invalid numbers
+          .split(/[,\s]+/)
+          .map((value) => parseFloat(value))
+          .filter((value) => !isNaN(value));
 
         const config = Object.values(TIMELINE_CONFIGS).find(
           (cfg) => cfg.expectedLength === uploadedData.length
@@ -266,21 +303,109 @@ const PerformanceChart = () => {
     }
   };
 
-  // Render performance chart
+  const handleRealFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const uploadedData = content
+          .split(/[,\s]+/)
+          .map((value) => parseFloat(value))
+          .filter((value) => !isNaN(value));
+
+        const config = Object.values(TIMELINE_CONFIGS).find(
+          (cfg) => cfg.expectedLength === uploadedData.length
+        );
+
+        if (config) {
+          setRealModelData(uploadedData);
+          if (realData) {
+            const updatedChartData: ChartData = {
+              ...realData,
+              model: [uploadedData],
+            };
+            setRealData(updatedChartData);
+          }
+        } else {
+          alert("Uploaded data must match a predefined timeline length.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  useEffect(() => {
+    const updateChartData = (chartType: "simulated" | "real") => {
+      switch (absoluteMode) {
+        case "normalized":
+          if (chartType === "simulated") {
+            const newNormData = [...simulatedNormalizedModelData];
+            if (simulatedData) {
+              const updatedChartData = {
+                ...simulatedData,
+                model: [newNormData],
+              };
+              setSimulatedData(updatedChartData);
+            }
+          } else {
+            const newNormData = [...realNormalizedModelData];
+            if (realData) {
+              const updatedChartData = {
+                ...realData,
+                model: [newNormData],
+              };
+              setRealData(updatedChartData);
+            }
+          }
+          break;
+        case "unnormalized":
+          if (chartType === "simulated") {
+            const newData = [...simulatedModelData];
+            if (simulatedData) {
+              const updatedChartData = {
+                ...simulatedData,
+                model: [newData],
+              };
+              setSimulatedData(updatedChartData);
+            }
+          } else {
+            const newData = [...realModelData];
+            if (realData) {
+              const updatedChartData = {
+                ...realData,
+                model: [newData],
+              };
+              setRealData(updatedChartData);
+            }
+          }
+          break;
+      }
+    };
+
+    // Update both charts when absoluteMode changes
+    updateChartData("simulated");
+    updateChartData("real");
+  }, [absoluteMode]);
+
+  // Render function modified to handle both charts
   const renderPerformanceChart = (
     chartData: ChartData,
-    isEditable: boolean = false,
-    ref: any,
+    chartType: "simulated" | "real",
+    ref: React.RefObject<HTMLDivElement>,
     theme: any
   ) => {
-    const processedData = processChartData(chartData);
+    const processedData = processChartData(chartData, chartType);
+    const isSimulated = chartType === "simulated";
 
     return (
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
         <h1 className="mb-4 text-3xl text-center pt-2 font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-                    <span className="font-kigelia text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                      {theme.strings.performanceCharts}
-                    </span>
+          <span className="font-kigelia text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+            {isSimulated
+              ? theme.strings.simulatedPerformance
+              : theme.strings.realPerformance}
+          </span>
         </h1>
         <Box
           display="flex"
@@ -289,22 +414,34 @@ const PerformanceChart = () => {
           mb={2}
         >
           <Typography variant="h4">
-            {isEditable ? theme.strings.simulatedPerformance : theme.strings.realPerformance}
+            {isSimulated
+              ? theme.strings.simulatedPerformance
+              : theme.strings.realPerformance}
           </Typography>
           <Box display="flex" gap={1}>
-            <IconButton onClick={() => toggleFullscreen("simulated")}>
+            <IconButton onClick={() => toggleFullscreen(chartType)}>
               <Fullscreen />
             </IconButton>
-            <IconButton onClick={() => downloadChart("simulated")}>
+            <IconButton onClick={() => downloadChart(chartType)}>
               <Download />
             </IconButton>
-            {isEditable && (
-              <IconButton onClick={() => setEditMode(!editMode)}>
+            {isAdmin && (
+              <IconButton
+                onClick={() =>
+                  isSimulated
+                    ? setSimulatedEditMode(!simulatedEditMode)
+                    : setRealEditMode(!realEditMode)
+                }
+              >
                 <EditIcon />
               </IconButton>
             )}
             {isAdmin && (
-              <FileUploadButton handleFileUpload={handleFileUpload} />
+              <FileUploadButton
+                handleFileUpload={
+                  isSimulated ? handleSimulatedFileUpload : handleRealFileUpload
+                }
+              />
             )}
           </Box>
         </Box>
@@ -375,47 +512,35 @@ const PerformanceChart = () => {
           </ResponsiveContainer>
         </div>
 
-        {isEditable && editMode && (
-          <Box
-            sx={{
-              maxHeight: 200,
-              overflowY: "auto", // Enable vertical scrolling
-              mt: 2,
-              pt: 2,
-            }}
-          >
+        {(isSimulated ? simulatedEditMode : realEditMode) && (
+          <Box sx={{ maxHeight: 200, overflowY: "auto", mt: 2, pt: 2 }}>
             <Grid container spacing={2}>
               {absoluteMode === "unnormalized" &&
-                simulatedModelData.map((value, index) => (
-                  <Grid
-                    item
-                    key={index}
-                    xs={12} // 1 column on small screens
-                    sm={6} // 2 columns on small-medium screens (optional, adjust as needed)
-                    md={4} // 3 columns on medium screens
-                    lg={3} // 4 columns on large screens
-                  >
-                    <TextField
-                      fullWidth
-                      label={`Day ${index + 1}`}
-                      type="number"
-                      variant="outlined"
-                      size="small"
-                      value={value}
-                      onChange={(e) => handleDataEdit(index, e.target.value)}
-                    />
-                  </Grid>
-                ))}
+                (isSimulated ? simulatedModelData : realModelData).map(
+                  (value, index) => (
+                    <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                      <TextField
+                        fullWidth
+                        label={`Day ${index + 1}`}
+                        type="number"
+                        variant="outlined"
+                        size="small"
+                        value={value}
+                        onChange={(e) =>
+                          isSimulated
+                            ? handleSimulatedDataEdit(index, e.target.value)
+                            : handleRealDataEdit(index, e.target.value)
+                        }
+                      />
+                    </Grid>
+                  )
+                )}
               {absoluteMode === "normalized" &&
-                simulatedNormalizedModelData.map((value, index) => (
-                  <Grid
-                    item
-                    key={index}
-                    xs={12} // 1 column on small screens
-                    sm={6} // 2 columns on small-medium screens (optional, adjust as needed)
-                    md={4} // 3 columns on medium screens
-                    lg={3} // 4 columns on large screens
-                  >
+                (isSimulated
+                  ? simulatedNormalizedModelData
+                  : realNormalizedModelData
+                ).map((value, index) => (
+                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
                     <TextField
                       fullWidth
                       label={`Day ${index + 1}`}
@@ -424,7 +549,12 @@ const PerformanceChart = () => {
                       size="small"
                       value={value}
                       onChange={(e) =>
-                        handleNormalizedDataEdit(index, e.target.value)
+                        isSimulated
+                          ? handleSimulatedNormalizedDataEdit(
+                              index,
+                              e.target.value
+                            )
+                          : handleRealNormalizedDataEdit(index, e.target.value)
                       }
                     />
                   </Grid>
@@ -525,16 +655,22 @@ const PerformanceChart = () => {
 
           <Grid item xs={12}>
             {simulatedData &&
-              renderPerformanceChart(simulatedData, true, simulatedChartRef, theme)}
+              renderPerformanceChart(
+                simulatedData,
+                "simulated",
+                simulatedChartRef,
+                theme
+              )}
           </Grid>
 
           <Grid item xs={12}>
-            {realData && renderPerformanceChart(realData, false, realChartRef, theme)}
+            {realData &&
+              renderPerformanceChart(realData, "real", realChartRef, theme)}
           </Grid>
         </Grid>
       </Box>
     </>
   );
-}
+};
 
 export default PerformanceChart;
