@@ -109,7 +109,7 @@ const StockSelectionProcess = () => {
       </div>
 
       {/* Explanation text in the middle */}
-      <p className="text-[#156082] mb-8 text-lg section-desc">
+      <p className="text-gray-600 mb-8 section-desc">
         {theme.strings.stockSelectionProcess2}
       </p>
 
