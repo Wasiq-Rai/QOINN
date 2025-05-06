@@ -8,9 +8,11 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
+import { useAdmin } from "@/context/AdminContext";
 
 export function Header() {
   const { isSignedIn, user, isLoaded } = useUser();
+  const { isAdmin } = useAdmin();
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#c2d6df]">
       <div className="container flex h-16 items-center">
@@ -65,6 +67,15 @@ export function Header() {
             >
               Team
             </Link>
+            {isAdmin && (
+
+              <Link
+              href="/admin"
+              className="hover:text-blue-600 transition-colors"
+              >
+              Admin
+            </Link>
+            )}
           </nav>
         </div>
 
