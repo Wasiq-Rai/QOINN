@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <HeroSection />
       <StockTicker />
       <div className="mx-auto">
-        <div>
+        <div id="performance">
           <PerformanceChart />
         </div>
         <QoinnExplainer />

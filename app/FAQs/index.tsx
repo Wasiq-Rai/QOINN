@@ -18,7 +18,7 @@ const Faq = () => {
         <div className="flex flex-col items-start gap-3 w-2/5 ">
           <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold capitalize">
             Frequently asked{" "}
-            <span className="bg-gradient-to-r from-gray-700 via-gray-900 to-black">
+            <span className="">
               questions
             </span>{" "}
           </h1>

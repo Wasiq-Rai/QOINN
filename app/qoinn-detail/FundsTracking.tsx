@@ -208,7 +208,7 @@ const IndexFundTracking = () => {
         </h1>
       </div>
 
-      <p className="text-gray-600 mb-6">
+      <p className="text-gray-600 mb-6 section-desc">
         {theme.strings.indexFundTrackingDescription}
       </p>
 
