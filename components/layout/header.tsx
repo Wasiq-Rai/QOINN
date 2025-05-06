@@ -26,6 +26,7 @@ export function Header() {
             />
             <Image
               src="/img/logo/logo-name.png"
+              className="translate-y-[3px]"
               alt="QOINN Logo"
               width={200}
               height={200}
