@@ -95,7 +95,7 @@ const StockSelectionProcess = () => {
       {/* First row of stocks with "Selected" labels */}
       <div className="flex h-full w-full justify-center mb-10">
       <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-1.png" alt="Index Funds Tracking" style={{
-          width: "60%",
+          width: "900px",
           height: "100%"
         }}/>
       </div>
@@ -103,7 +103,7 @@ const StockSelectionProcess = () => {
       {/* Middle row of stocks - all uptrend */}
       <div className="flex h-full w-full justify-center mb-8">
       <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-2.png" alt="Index Funds Tracking" style={{
-          width: "60%",
+          width: "900px",
           height: "100%"
         }}/>
       </div>
@@ -115,7 +115,7 @@ const StockSelectionProcess = () => {
 
       <div className="flex h-full w-full justify-center">
         <Image unoptimized  quality={100}width={0} height={0} src="/img/charts/stock-selection-3.png" alt="Index Funds Tracking" style={{
-          width: "60%",
+          width: "900px",
           height: "100%"
         }}/>
       </div>
