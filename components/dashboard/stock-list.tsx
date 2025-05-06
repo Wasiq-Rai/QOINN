@@ -36,6 +36,7 @@ import { indicators, Stock } from "@/utils/types";
 import TradingViewWidget from "./Charts/TradingViewWidget";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@clerk/nextjs";
+import EquityDonutChart from "../EquityDonutChart";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-10px); }
@@ -343,6 +344,7 @@ export function StockList() {
           </TableBody>
         </Table>
       <TradingViewWidget stockName={addedSymbol} />
+      <EquityDonutChart />
       </StyledTableContainer>
 
 

@@ -163,13 +163,13 @@ const SubscriptionForm = () => {
                 {theme.strings.unlockFetauresOnSubscriptionCard
                 }
               </p>
-              <Chart
+              {/* <Chart
                 options={chartOptions}
                 series={chartData.series}
                 type="donut"
                 width="100%"
                 height="200px"
-              />
+              /> */}
             </div>
 
             <div className="bg-blue-50 p-6 rounded-xl">
