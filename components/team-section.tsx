@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { Card, CardContent } from "@/components/ui/card"
 import { useTheme } from "@/context/ThemeContext"
 import { Typography } from "@mui/material"
@@ -70,7 +70,7 @@ export function TeamSection() {
   };
 
   return (
-    <>
+    <div id='team' >
       <Typography variant="h4" textAlign={"center"} my={4} color="#2d2b2a" gutterBottom className='font-kigelia'>
         {theme.strings.ourTeam}
       </Typography>
@@ -131,6 +131,6 @@ export function TeamSection() {
           </Card>
         ))}
       </div>
-    </>
+    </div>
   );
 }

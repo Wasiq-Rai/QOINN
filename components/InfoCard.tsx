@@ -85,7 +85,7 @@ const InfoCardSection = () => {
   }, []);
 
   return (
-    <section id="about" className="text-white h-fit bg-black min-h-screen w-full flex relative items-center justify-center p-8">
+    <section id="features" className="text-white h-fit bg-black min-h-screen w-full flex relative items-center justify-center p-8">
       <div className='absolute h-full w-full overflow-hidden'>
         <Image src="/img/bg/whirl.svg" fill className="absolute object-cover w-full overflow-visible sm:rotate-90" alt="Background Whirl" />
       </div>

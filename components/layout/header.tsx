@@ -33,7 +33,7 @@ export function Header() {
           </Link>
         </div>
         <div className="flex flex-2 items-center justify-end space-x-4">
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <nav className=" md:flex items-center space-x-6 text-lg font-medium text-gray-700 dark:text-gray-300">
             <Link
               href="/#features"
               className="hover:text-blue-600 transition-colors"
@@ -47,7 +47,7 @@ export function Header() {
               Performance
             </Link>
             <Link
-              href="/#investments"
+              href="/invest"
               className="hover:text-blue-600 transition-colors"
             >
               Investments

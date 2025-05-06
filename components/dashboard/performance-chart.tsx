@@ -55,7 +55,7 @@ const PerformanceChart = () => {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
 
-  const [activeModel, setActiveModel] = useState("M15");
+  const [activeModel, setActiveModel] = useState("M17");
   const [activeTimeline, setActiveTimeline] = useState("2y");
 
   // Separate edit modes
@@ -401,7 +401,7 @@ const PerformanceChart = () => {
     return (
       <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
         <h1 className="mb-4 text-3xl text-center pt-2 font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-          <span className="font-kigelia text-transparent text-3xl bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+          <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
             {isSimulated
               ? theme.strings.simulatedPerformance
               : theme.strings.realPerformance}
@@ -409,15 +409,10 @@ const PerformanceChart = () => {
         </h1>
         <Box
           display="flex"
-          justifyContent="space-between"
+          justifyContent="end"
           alignItems="center"
           mb={2}
         >
-          <Typography variant="h4">
-            {isSimulated
-              ? theme.strings.simulatedPerformance
-              : theme.strings.realPerformance}
-          </Typography>
           <Box display="flex" gap={1}>
             <IconButton onClick={() => toggleFullscreen(chartType)}>
               <Fullscreen />
