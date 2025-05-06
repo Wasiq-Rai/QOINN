@@ -221,7 +221,7 @@ const IndexFundTracking = () => {
           src="/img/charts/index-fund-tracking.png"
           alt="Index Funds Tracking"
           style={{
-            width: "60%",
+            width: "1000px",
             height: "100%",
           }}
         />
