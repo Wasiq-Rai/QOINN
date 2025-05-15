@@ -78,7 +78,10 @@ const EquityDonutChart = () => {
       formatter: (val: number) => `${val.toFixed(1)}%`,
       style: {
         fontSize: '14px',
-        colors: ['#1E293B'] // slate-800
+        colors: ['#1E293B'], // slate-800
+      },
+      dropShadow: {
+        enabled: false // This disables the shadow effect
       }
     },
     plotOptions: {

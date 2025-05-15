@@ -12,6 +12,9 @@ import { AdminProvider } from '@/context/AdminContext'
 export const metadata: Metadata = {
   title: 'Qoinn',
   description: 'Qoinn vs SPY/VOO',
+  icons: {
+    icon: '/favicon.ico'
+  }
 }
 
 const inter = Inter({ subsets: ["latin"] })
