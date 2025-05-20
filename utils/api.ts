@@ -82,11 +82,32 @@ export const addStockToPortfolio = async (
 
 export const getPerformanceData = async (
   model: string,
-  timeframe: string
-): Promise<ChartData> => {
-  const response = await api.get<ChartData>(
-    `/performance/chart_data/?model=${model}&timeframe=${timeframe}`
-  );
+  timeline: string
+): Promise<any> => {
+  const response = await Promise.all([
+          api.get<ChartData>(`/performance/chart_data/?model=${model}&timeframe=${timeline}&simulated=true`),
+          api.get<ChartData>(`/performance/chart_data/?model=${model}&timeframe=${timeline}&simulated=false`)
+        ]);
+  return response;
+};
+
+// api.ts
+export const saveModelData = async (
+  model: string,
+  timeframe: string,
+  dates: string[],
+  values: number[],
+  normalizedValues: number[] | null,
+  isSimulated: boolean
+): Promise<{status: string, created: boolean}> => {
+  const response = await api.post('/performance/save_model_data/', {
+    model,
+    timeframe,
+    dates,
+    values,
+    normalized_values: normalizedValues,
+    is_simulated: isSimulated
+  });
   return response.data;
 };
 

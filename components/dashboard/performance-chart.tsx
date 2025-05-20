@@ -35,7 +35,11 @@ import {
   Download,
 } from "@mui/icons-material";
 
-import { getPerformanceData, TIMELINE_CONFIGS } from "@/utils/api";
+import {
+  getPerformanceData,
+  saveModelData,
+  TIMELINE_CONFIGS,
+} from "@/utils/api";
 import { ChartData } from "@/utils/types";
 import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
@@ -86,49 +90,78 @@ const PerformanceChart = () => {
     "simulated" | "real" | null
   >(null);
 
-  const normalize = (data: ChartData) => {
-    const modelValues = data?.model ? data?.model[0] : [];
-    let normalizedModel: number[] = [];
-    if (data?.model) {
-      // Calculate normalization only if needed
-      if (dataType === "absolute" && absoluteMode === "normalized") {
-        const allSpyVooValues = [...data.spy, ...data.voo];
-        const minValue = Math.min(...allSpyVooValues);
-        const maxValue = Math.max(...allSpyVooValues);
+  const [startDate, setStartDate] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<ChartData | null>(null);
 
-        normalizedModel = modelValues.map((value) => {
-          return (
-            ((value - Math.min(...modelValues)) /
-              (Math.max(...modelValues) - Math.min(...modelValues))) *
-              (maxValue - minValue) +
-            minValue
-          );
-        });
-      }
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartDate(e.target.value);
+  };
+
+  const filterDataFromDate = (data: ChartData, date: string) => {
+    if (!date || !data) return data;
+
+    const dateIndex = data.dates.findIndex((d) => d === date);
+    if (dateIndex === -1) return data;
+
+    return {
+      ...data,
+      dates: data.dates.slice(dateIndex),
+      spy: data.spy.slice(dateIndex),
+      voo: data.voo.slice(dateIndex),
+      model: [data.model[0].slice(dateIndex)],
+    };
+  };
+
+  useEffect(() => {
+    if (realData && startDate) {
+      setFilteredData(filterDataFromDate(realData, startDate));
+    } else {
+      setFilteredData(realData);
     }
-    return normalizedModel;
+  }, [startDate, realData]);
+
+  const normalize = (data: ChartData): number[] => {
+    const modelValues = data?.model ? data?.model[0] : [];
+    if (!modelValues.length) return [];
+
+    const allSpyVooValues = [...data.spy, ...data.voo];
+    const minValue = Math.min(...allSpyVooValues);
+    const maxValue = Math.max(...allSpyVooValues);
+
+    const modelMin = Math.min(...modelValues);
+    const modelMax = Math.max(...modelValues);
+
+    return modelValues.map((value) => {
+      return (
+        ((value - modelMin) / (modelMax - modelMin)) * (maxValue - minValue) +
+        minValue
+      );
+    });
   };
 
   // Fetch performance data
   const fetchData = async (model: string, timeline: string) => {
     try {
-      const response = await getPerformanceData(model, timeline);
+      // Fetch both simulated and real data
+      const [simulatedResponse, realResponse] = await getPerformanceData(
+        model,
+        timeline
+      );
 
-      // Create deep copies for each chart
-      const simulatedCopy = JSON.parse(JSON.stringify(response));
-      const realCopy = JSON.parse(JSON.stringify(response));
+      // Process simulated data
+      setSimulatedData(simulatedResponse.data);
+      setSimulatedModelData(simulatedResponse.data.model[0]);
+      setSimulatedNormalizedModelData(
+        simulatedResponse.data.normalized_model?.[0] ||
+          normalize(simulatedResponse.data)
+      );
 
-      setSimulatedData(simulatedCopy);
-      setRealData(realCopy);
-
-      setSimulatedModelData(simulatedCopy.model[0]);
-      setRealModelData(realCopy.model[0]);
-
-      const simulatedNormData = normalize(simulatedCopy);
-      const realNormData = normalize(realCopy);
-
-      setSimulatedNormalizedModelData(simulatedNormData);
-      setRealNormalizedModelData(realNormData);
+      // Process real data
+      setRealData(realResponse.data);
+      setRealModelData(realResponse.data.model[0]);
+      setRealNormalizedModelData(
+        realResponse.data.normalized_model?.[0] || normalize(realResponse.data)
+      );
     } catch (error) {
       console.error("Error fetching performance data:", error);
     }
@@ -210,7 +243,31 @@ const PerformanceChart = () => {
     }
   };
 
-  const handleSimulatedDataEdit = (index: number, value: string) => {
+  const saveDataToBackend = async (
+    chartType: "simulated" | "real",
+    dates: string[],
+    values: number[],
+    normalizedValues: number[]
+  ) => {
+    if (!isAdmin) return;
+
+    try {
+      const response = await saveModelData(
+        activeModel,
+        activeTimeline,
+        dates,
+        values,
+        normalizedValues,
+        chartType === "simulated"
+      );
+      console.log("Save successful:", response);
+    } catch (error) {
+      console.error("Failed to save model data:", error);
+    }
+  };
+
+  // Update both simulated handlers
+  const handleSimulatedDataEdit = async (index: number, value: string) => {
     const newData = [...simulatedModelData];
     newData[index] = Number(value);
     setSimulatedModelData(newData);
@@ -221,10 +278,19 @@ const PerformanceChart = () => {
         model: [newData],
       };
       setSimulatedData(updatedChartData);
+      await saveDataToBackend(
+        "simulated",
+        simulatedData.dates,
+        newData,
+        simulatedNormalizedModelData
+      );
     }
   };
 
-  const handleSimulatedNormalizedDataEdit = (index: number, value: string) => {
+  const handleSimulatedNormalizedDataEdit = async (
+    index: number,
+    value: string
+  ) => {
     const newData = [...simulatedNormalizedModelData];
     newData[index] = Number(value);
     setSimulatedNormalizedModelData(newData);
@@ -235,11 +301,17 @@ const PerformanceChart = () => {
         model: [newData],
       };
       setSimulatedData(updatedChartData);
+      await saveDataToBackend(
+        "simulated",
+        simulatedData.dates,
+        simulatedModelData,
+        newData
+      );
     }
   };
 
-  // Real chart edit handlers
-  const handleRealDataEdit = (index: number, value: string) => {
+  // Update both real handlers similarly
+  const handleRealDataEdit = async (index: number, value: string) => {
     const newData = [...realModelData];
     newData[index] = Number(value);
     setRealModelData(newData);
@@ -250,10 +322,16 @@ const PerformanceChart = () => {
         model: [newData],
       };
       setRealData(updatedChartData);
+      await saveDataToBackend(
+        "real",
+        realData.dates,
+        newData,
+        realNormalizedModelData
+      );
     }
   };
 
-  const handleRealNormalizedDataEdit = (index: number, value: string) => {
+  const handleRealNormalizedDataEdit = async (index: number, value: string) => {
     const newData = [...realNormalizedModelData];
     newData[index] = Number(value);
     setRealNormalizedModelData(newData);
@@ -264,74 +342,115 @@ const PerformanceChart = () => {
         model: [newData],
       };
       setRealData(updatedChartData);
+      await saveDataToBackend("real", realData.dates, realModelData, newData);
     }
   };
 
-  // Separate file upload handlers
-  const handleSimulatedFileUpload = (
+  const parseUploadedFile = (content: string): number[] => {
+    // Remove all whitespace and brackets
+    let cleaned = content.replace(/[\[\]]/g, "").trim();
+
+    // Split by any whitespace or comma
+    const values = cleaned.split(/[\s,]+/).filter((val) => val.trim() !== "");
+
+    // Convert to numbers and filter out invalid entries
+    return values.map((val) => parseFloat(val)).filter((val) => !isNaN(val));
+  };
+
+  const handleSimulatedFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    console.log(file)
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        const uploadedData = content
-          .split(/[,\s]+/)
-          .map((value) => parseFloat(value))
-          .filter((value) => !isNaN(value));
+    if (!file) return;
 
-        const config = Object.values(TIMELINE_CONFIGS).find(
-          (cfg) => cfg.expectedLength === uploadedData.length
-        );
+    try {
+      const content = await file.text();
+      const uploadedData = parseUploadedFile(content);
 
-        if (config) {
-          setSimulatedModelData(uploadedData);
-          if (simulatedData) {
-            const updatedChartData: ChartData = {
-              ...simulatedData,
-              model: [uploadedData],
-            };
-            setSimulatedData(updatedChartData);
-          }
-        } else {
-          alert("Uploaded data must match a predefined timeline length.");
+      const config = Object.values(TIMELINE_CONFIGS).find(
+        (cfg) => cfg.expectedLength === uploadedData.length
+      );
+
+      if (!config) {
+        alert("Uploaded data must match a predefined timeline length.");
+        return;
+      }
+
+      // Update local state
+      setSimulatedModelData(uploadedData);
+
+      if (simulatedData) {
+        const updatedChartData = {
+          ...simulatedData,
+          model: [uploadedData],
+        };
+        setSimulatedData(updatedChartData);
+
+        // Save to backend
+        if (isAdmin) {
+          await saveDataToBackend(
+            "simulated",
+            simulatedData.dates,
+            uploadedData,
+            normalize({ ...simulatedData, model: [uploadedData] })
+          );
         }
-      };
-      reader.readAsText(file);
+      }
+    } catch (error) {
+      console.error("Error processing uploaded file:", error);
+      alert("Error processing file. Please check the format.");
+    } finally {
+      // Reset the input to allow re-uploading the same file
+      event.target.value = "";
     }
   };
 
-  const handleRealFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Create similar handler for real data upload
+  const handleRealFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        const uploadedData = content
-          .split(/[,\s]+/)
-          .map((value) => parseFloat(value))
-          .filter((value) => !isNaN(value));
+    if (!file) return;
 
-        const config = Object.values(TIMELINE_CONFIGS).find(
-          (cfg) => cfg.expectedLength === uploadedData.length
-        );
+    try {
+      const content = await file.text();
+      const uploadedData = parseUploadedFile(content);
 
-        if (config) {
-          setRealModelData(uploadedData);
-          if (realData) {
-            const updatedChartData: ChartData = {
-              ...realData,
-              model: [uploadedData],
-            };
-            setRealData(updatedChartData);
-          }
-        } else {
-          alert("Uploaded data must match a predefined timeline length.");
+      const config = Object.values(TIMELINE_CONFIGS).find(
+        (cfg) => cfg.expectedLength === uploadedData.length
+      );
+
+      if (!config) {
+        alert("Uploaded data must match a predefined timeline length.");
+        return;
+      }
+
+      // Update local state
+      setRealModelData(uploadedData);
+
+      if (realData) {
+        const updatedChartData = {
+          ...realData,
+          model: [uploadedData],
+        };
+        setRealData(updatedChartData);
+
+        // Save to backend
+        if (isAdmin) {
+          await saveDataToBackend(
+            "real",
+            realData.dates,
+            uploadedData,
+            normalize({ ...realData, model: [uploadedData] })
+          );
         }
-      };
-      reader.readAsText(file);
+      }
+    } catch (error) {
+      console.error("Error processing uploaded file:", error);
+      alert("Error processing file. Please check the format.");
+    } finally {
+      // Reset the input to allow re-uploading the same file
+      event.target.value = "";
     }
   };
 
@@ -407,12 +526,86 @@ const PerformanceChart = () => {
               : theme.strings.realPerformance}
           </span>
         </h1>
-        <Box
-          display="flex"
-          justifyContent="end"
-          alignItems="center"
-          mb={2}
-        >
+        {!isSimulated && (
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={2}
+            sx={{
+              p: 2,
+              backgroundColor: "rgba(0,0,0,0.03)",
+              borderRadius: 2,
+              border: `1px solid ${"rgba(0,0,0,0.1)"}`,
+              maxWidth: "fit-content",
+              ml: "auto",
+              mr: "auto",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "rgba(0,0,0,0.8)",
+              }}
+            >
+              View Performance From:
+            </Typography>
+
+            <TextField
+              type="date"
+              value={startDate}
+              onChange={handleDateChange}
+              size="small"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1,
+                  "& fieldset": {
+                    borderColor: "rgba(0,0,0,0.2)",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  py: 1,
+                  px: 1.5,
+                  fontSize: "0.875rem",
+                },
+              }}
+              InputLabelProps={{
+                shrink: true,
+                sx: {
+                  color: "rgba(0,0,0,0.6)",
+                },
+              }}
+              inputProps={{
+                max: new Date().toISOString().split("T")[0],
+                sx: {
+                  color: "#000",
+                },
+              }}
+            />
+
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setStartDate("")}
+              sx={{
+                textTransform: "none",
+                borderRadius: 1,
+                px: 2,
+                py: 1,
+                borderWidth: 1,
+                "&:hover": {
+                  borderWidth: 1,
+                  backgroundColor: "rgba(0,0,0,0.04)",
+                },
+                color: "rgba(0,0,0,0.8)",
+                borderColor: "rgba(0,0,0,0.2)",
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
+        )}
+        <Box display="flex" justifyContent="end" alignItems="center" mb={2}>
           <Box display="flex" gap={1}>
             <IconButton onClick={() => toggleFullscreen(chartType)}>
               <Fullscreen />
@@ -657,10 +850,9 @@ const PerformanceChart = () => {
                 theme
               )}
           </Grid>
-
           <Grid item xs={12}>
-            {realData &&
-              renderPerformanceChart(realData, "real", realChartRef, theme)}
+            {filteredData &&
+              renderPerformanceChart(filteredData, "real", realChartRef, theme)}
           </Grid>
         </Grid>
       </Box>
