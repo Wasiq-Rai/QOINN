@@ -64,10 +64,12 @@ export const defaultTheme: ThemeContent = {
     teamMember1Designation: "Co-Founder / CEO / Software Developer",
     teamMember1Description:
       "UIUC -- M.S. in Physics",
+    teamMember1Description2: "-----",
     teamMember2Name: "Po-Wei Peng",
     teamMember2Designation: "Co-Founder / Consultant",
     teamMember2Description:
       "Software Engineer at Amazon",
+    teamMember2Description2: "-----",
     QOINNPerformanceDashboard: "QOINN Performance Dashboard",
     frequentlyAskedQuestions: "Frequently asked questions",
     faqsDescription:

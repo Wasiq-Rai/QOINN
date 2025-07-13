@@ -18,7 +18,7 @@ import {
   TickerData,
 } from "./types";
 import { ThemeContent } from "./themes";
-// const API_URL = "http://localhost:8000/api";
+// const API_URL = "http://localhost:8080/api";
 // // const API_URL = "https://qoinn-backend-django-production.up.railway.app/api";
 const API_URL = "https://web-production-9b972.up.railway.app/api";
 
@@ -165,8 +165,14 @@ export const getUserPremiumStatus = async () => {
 };
 
 export const getStockNews = async (): Promise<News[]> => {
-  const response = await api.get<any>("/stock-news/getNews/");
-  return response.data.feed;
+  try{
+    const response = await api.get<any>("/stock-news/getNews/");
+    return response.data.feed || [];
+  }
+  catch (error) {
+    console.error("Error fetching stock news:", error);
+    return [];
+  }
 };
 
 export const uploadPDF = async (formData: any): Promise<any> => {

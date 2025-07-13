@@ -175,7 +175,7 @@ export function StockList() {
   return (
     <Box sx={{ position: "relative", width: "100%" }}>
       <StyledTableContainer component={Paper}>
-        {!isPremium && !isSignedIn ? (
+        {!isPremium || !isSignedIn ? (
           <>
             <PremiumOverlay onClick={() => setShowSubscription(true)}>
               <Lock fontSize="large" sx={{ mb: 2, fontSize: 64 }} />
