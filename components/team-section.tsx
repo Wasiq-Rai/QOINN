@@ -11,6 +11,7 @@ interface TeamMember {
   name: string;
   role: string;
   bio: string;
+  subBio: string;
   image: string;
 }
 
@@ -25,12 +26,14 @@ export function TeamSection() {
       name: theme.strings.teamMember1Name,
       role: theme.strings.teamMember1Designation,
       bio: theme.strings.teamMember1Description,
+      subBio: theme.strings.teamMember1Description2,
       image: "/img/team/team-member-1.jpg",
     },
     {
       name: theme.strings.teamMember2Name,
       role: theme.strings.teamMember2Designation,
       bio: theme.strings.teamMember2Description,
+      subBio: theme.strings.teamMember2Description2,
       image: "/img/team/team-member-2.jpeg",
     }])
   },[theme])
@@ -104,7 +107,7 @@ export function TeamSection() {
               <h3 className="font-bold text-lg">{member.name}</h3>
               <p className="text-sm text-gray-500 mb-2">{member.role}</p>
               <p className="text-sm">{member.bio}</p>
-              <p className="text-sm">{member.bio}</p>
+              <p className="text-sm">{member.subBio}</p>
             </CardContent>
 
             {isAdmin && selectedMember === index && (
