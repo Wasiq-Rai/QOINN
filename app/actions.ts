@@ -92,14 +92,14 @@ export async function scheduleInvestmentMeeting(data: {
     await sendEmail(
       data.email,
       "Investment Meeting Scheduled",
-      `Dear ${data.name},\n\nYour meeting to discuss investing in QOINN has been scheduled for ${slot.datetime}.\n\nBest regards,\nQOINN Team`
+      `Dear ${data.name},\n\nYour meeting to discuss investing in QOINN has been scheduled. We will get back to you with an update to the meeting.\n\nBest regards,\nQOINN Team`
     )
 
     // Send notification email to admin
     await sendEmail(
       process.env.ADMIN_EMAIL || "qoinninvestment@gmail.com",
       "New Investment Meeting Scheduled",
-      `A new investment meeting has been scheduled:\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nInvestment Amount: ${data.investmentAmount}\nMessage: ${data.message}\nSelected Slot: ${slot.datetime}`
+      `A new investment meeting has been scheduled:\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nInvestment Amount: ${data.investmentAmount}\nMessage: ${data.message}\nSelected Slot: ${data.selectedSlot}`
     )
 
     revalidatePath('/admin')
