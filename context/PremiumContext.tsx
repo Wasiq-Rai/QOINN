@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useUser , useAuth} from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import { API_URL } from "@/utils/api";
 
 // Define context type
 interface PremiumContextType {
@@ -19,7 +20,6 @@ const PremiumContext = createContext<PremiumContextType>({
 export const PremiumProvider = ({ children }: { children: ReactNode }) => {
   const [isPremium, setIsPremium] = useState(false);
   const { user, isSignedIn } = useUser();
-  const { getToken } = useAuth();
 
   useEffect(() => {
     checkPremiumStatus();
@@ -29,8 +29,8 @@ const checkPremiumStatus = async () => {
   if (!isSignedIn || !user) return;
 
   try {
-    // const res = await fetch(`http://localhost:8080/api/userprofile/premium_status/?email=${user.primaryEmailAddress?.emailAddress}`);
-    const res = await fetch(`https://web-production-9b972.up.railway.app/api/userprofile/premium_status/?email=${user.primaryEmailAddress?.emailAddress}`);
+    const res = await fetch(`${API_URL}/userprofile/premium_status/?email=${user.primaryEmailAddress?.emailAddress}`);
+    console.log(res)
     const data = await res.json();
     setIsPremium(data.is_premium);
   } catch (err) {

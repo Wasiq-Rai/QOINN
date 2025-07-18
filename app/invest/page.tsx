@@ -35,7 +35,7 @@ export default function InvestPage() {
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {/* Left Side - Company Information */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={12}>
             <Paper
               elevation={3}
               sx={{
@@ -120,7 +120,7 @@ export default function InvestPage() {
           </Grid>
 
           {/* Right Side - Investment Form */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={12}>
             <Paper
               elevation={3}
               sx={{

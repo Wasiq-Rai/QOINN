@@ -24,7 +24,7 @@ interface Meeting {
   isApproved: boolean
 }
 
-async function readData(): Promise<{ slots: Slot[], meetings: Meeting[] }> {
+export async function readData(): Promise<{ slots: Slot[], meetings: Meeting[] }> {
   try {
     const data = await fs.readFile(DATA_FILE, 'utf8')
     return JSON.parse(data)
@@ -39,7 +39,7 @@ export async function getSlots(){
 
 }
 
-async function writeData(data: { slots: Slot[], meetings: Meeting[] }) {
+export async function writeData(data: { slots: Slot[], meetings: Meeting[] }) {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2))
 }
 
@@ -72,8 +72,7 @@ export async function scheduleInvestmentMeeting(data: {
 }) {
   try {
     const { slots, meetings } = await readData()
-    const slot = slots.find(s => s.datetime === data.selectedSlot && !s.isBooked)
-    
+    const slot = slots.find(s => s.datetime === data.selectedSlot)
     if (!slot) {
       throw new Error("Selected slot is not available")
     }
@@ -89,7 +88,6 @@ export async function scheduleInvestmentMeeting(data: {
       isApproved: false,
     }
 
-    slot.isBooked = true
     meetings.push(newMeeting)
 
     await writeData({ slots, meetings })
@@ -98,14 +96,14 @@ export async function scheduleInvestmentMeeting(data: {
     await sendEmail(
       data.email,
       "Investment Meeting Scheduled",
-      `Dear ${data.name},\n\nYour meeting to discuss investing in QOINN has been scheduled for ${new Date(slot.datetime).toLocaleString()}.\n\nBest regards,\nQOINN Team`
+      `Dear ${data.name},\n\nYour meeting to discuss investing in QOINN has been scheduled for ${slot.datetime}.\n\nBest regards,\nQOINN Team`
     )
 
     // Send notification email to admin
     await sendEmail(
-      process.env.ADMIN_EMAIL || "admin@qoinn.com",
+      process.env.ADMIN_EMAIL || "qoinninvestment@gmail.com",
       "New Investment Meeting Scheduled",
-      `A new investment meeting has been scheduled:\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nInvestment Amount: ${data.investmentAmount}\nMessage: ${data.message}\nSelected Slot: ${new Date(slot.datetime).toLocaleString()}`
+      `A new investment meeting has been scheduled:\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nInvestment Amount: ${data.investmentAmount}\nMessage: ${data.message}\nSelected Slot: ${slot.datetime}`
     )
 
     revalidatePath('/admin')
@@ -157,7 +155,7 @@ export async function approveInvestmentMeeting(meetingId: string) {
   await sendEmail(
     meeting.email,
     "Investment Meeting Approved",
-    `Dear ${meeting.name},\n\nYour investment meeting scheduled for ${new Date(slots.find(s => s.id === meeting.slotId)?.datetime || '').toLocaleString()} has been approved. You will receive a Zoom link closer to the meeting time.\n\nBest regards,\nQOINN Team`
+    `Dear ${meeting.name},\n\nYour investment meeting scheduled for ${slots.find(s => s.id === meeting.slotId)?.datetime} has been approved. You will receive a Zoom link closer to the meeting time.\n\nBest regards,\nQOINN Team`
   )
 
   revalidatePath('/admin')

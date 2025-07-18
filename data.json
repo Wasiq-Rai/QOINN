@@ -2,84 +2,40 @@
   "slots": [
     {
       "id": "slot-1",
-      "datetime": "2024-01-01T10:00:00.000Z",
-      "isBooked": true
-    },
-    {
-      "id": "slot-2",
-      "datetime": "2024-01-01T11:00:00.000Z",
-      "isBooked": true
-    },
-    {
-      "id": "slot-3",
-      "datetime": "2024-01-01T12:00:00.000Z",
-      "isBooked": true
-    },
-    {
-      "id": "slot-4",
-      "datetime": "2024-01-01T13:00:00.000Z",
-      "isBooked": true
-    },
-    {
-      "id": "slot-5",
-      "datetime": "2024-01-01T14:00:00.000Z",
+      "datetime": "morning",
       "isBooked": false
     },
     {
-      "id": "1740096353374",
-      "datetime": "2025-02-21T08:10",
+      "id": "slot-2",
+      "datetime": "afternoon",
+      "isBooked": false
+    },
+    {
+      "id": "slot-3",
+      "datetime": "night",
       "isBooked": false
     }
   ],
   "meetings": [
     {
-      "id": "meeting-1",
-      "name": "John Doe",
-      "email": "john.doe@example.com",
-      "phone": "123-456-7890",
-      "investmentAmount": 10000,
-      "message": "Hello, I'm interested in investing.",
-      "slotId": "slot-2",
-      "isApproved": false
-    },
-    {
-      "id": "meeting-2",
-      "name": "Jane Doe",
-      "email": "jane.doe@example.com",
-      "phone": "987-654-3210",
-      "investmentAmount": 5000,
-      "message": "Hi, I'd like to schedule a meeting.",
-      "slotId": "slot-4",
-      "isApproved": false
-    },
-    {
-      "id": "1737316152921",
+      "id": "1752807940253",
       "name": "Rai Wasiq Abdullah",
       "email": "wasiqrai1122@gmail.com",
       "phone": "03068852579",
-      "investmentAmount": 87,
-      "message": "",
-      "slotId": "2024-01-01T10:00:00.000Z",
-      "isApproved": false
+      "investmentAmount": 78787,
+      "message": "Heyy",
+      "slotId": "morning",
+      "isApproved": true,
+      "isCompleted": true
     },
     {
-      "id": "1737920730932",
+      "id": "1752811040943",
       "name": "Rai Wasiq Abdullah",
       "email": "wasiqrai1122@gmail.com",
       "phone": "03068852579",
-      "investmentAmount": 100,
+      "investmentAmount": 8998,
       "message": "",
-      "slotId": "2024-01-01T10:00:00.000Z",
-      "isApproved": false
-    },
-    {
-      "id": "1738026885868",
-      "name": "Rai Wasiq Abdullah",
-      "email": "wasiqrai1122@gmail.com",
-      "phone": "03068852579",
-      "investmentAmount": 1000,
-      "message": "",
-      "slotId": "2024-01-01T12:00:00.000Z",
+      "slotId": "night",
       "isApproved": false
     }
   ]

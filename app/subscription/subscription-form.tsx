@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { usePremium } from "@/context/PremiumContext";
 import { useUser } from "@clerk/nextjs";
-import { getEquityStocks } from "@/utils/api";
+import { API_URL, getEquityStocks } from "@/utils/api";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "next/navigation";
 
@@ -54,8 +54,7 @@ const SubscriptionForm = () => {
 
     try {
       const res = await fetch(
-        // "http://localhost:8080/api/create-subscription/",
-        "https://web-production-9b972.up.railway.app/api/create-subscription/",
+        `${API_URL}/create-subscription/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
