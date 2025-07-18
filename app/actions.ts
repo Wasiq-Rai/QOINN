@@ -72,10 +72,6 @@ export async function scheduleInvestmentMeeting(data: {
 }) {
   try {
     const { slots, meetings } = await readData()
-    const slot = slots.find(s => s.datetime === data.selectedSlot)
-    if (!slot) {
-      throw new Error("Selected slot is not available")
-    }
 
     const newMeeting: Meeting = {
       id: Date.now().toString(),
