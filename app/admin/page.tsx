@@ -21,6 +21,7 @@ import EquityDonutChart from "@/components/EquityDonutChart";
 import { Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { NewsletterSubscribers } from "./NewsLetterSubscribers";
+import MeetingsPanel from "@/components/meeting/AdminMeetingsPanel";
 
 export default function AdminPage() {
   const { user } = useUser();
@@ -144,13 +145,13 @@ export default function AdminPage() {
 
           <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle>Slot Management</CardTitle>
+              <CardTitle>Meetings</CardTitle>
               <CardDescription>
-                Create and manage available time slots
+                Manage investment meetings
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AdminSlotManager initialSlots={slots} />
+              <MeetingsPanel/>
             </CardContent>
           </Card>
           <Card className="md:col-span-2">

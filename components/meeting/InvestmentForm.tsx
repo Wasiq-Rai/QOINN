@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -14,17 +14,28 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { scheduleInvestmentMeeting } from '@/app/actions';
+import { useUser } from '@clerk/nextjs';
 
 export default function InvestmentForm() {
   const router = useRouter();
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    email:  '',
     phone: '',
     investmentAmount: '',
     message: '',
     selectedSlot: ''
   });
+
+  useEffect(() => {
+    if (user && user.primaryEmailAddress) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.primaryEmailAddress?.emailAddress || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -47,9 +58,9 @@ export default function InvestmentForm() {
   };
 
   const timeSlots = [
-    { value: "2024-01-01T10:00:00.000Z", label: "January 1, 2024 - 10:00 AM" },
-    { value: "2024-01-01T12:00:00.000Z", label: "January 1, 2024 - 12:00 PM" },
-    { value: "2024-01-01T14:00:00.000Z", label: "January 1, 2024 - 2:00 PM" }
+    { value: "morning", label: "Morning 10:00 AM - 12:00 pm" },
+    { value: "afternoon", label: "Afternoon 2:00 PM - 5:00 pm" },
+    { value: "night", label: "Night 8:00 PM - 11:00 pm" }
   ];
 
   return (
@@ -89,12 +100,13 @@ export default function InvestmentForm() {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label="Email"
+              label={user?.primaryEmailAddress?.emailAddress ? "" : "Email"}
               name="email"
               type="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={user?.primaryEmailAddress?.emailAddress || formData.email}
+              disabled = {user?.primaryEmailAddress?.emailAddress ? true : false}
               required
+              onChange={handleChange}
               variant="outlined"
             />
           </Grid>
