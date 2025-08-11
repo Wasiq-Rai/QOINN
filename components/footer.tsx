@@ -1,79 +1,14 @@
+'use client';
+import { useTheme } from '@/context/ThemeContext';
 import Link from 'next/link'
 
 export function Footer() {
+  const {theme } = useTheme();
   return (
     <footer className="text-primary-foreground bg-black p-2">
-      <div className="container py-10">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div>
-            <h2 className="text-white mb-6 text-sm font-semibold uppercase">Company</h2>
-            <ul className="text-white">
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">About</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Careers</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Brand Center</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Blog</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-white mb-6 text-sm font-semibold uppercase">Help center</h2>
-            <ul className="text-white">
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Discord Server</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Twitter</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Facebook</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Contact Us</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-white mb-6 text-sm font-semibold uppercase">Legal</h2>
-            <ul className="text-white">
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Privacy Policy</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Licensing</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Terms &amp; Conditions</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-white mb-6 text-sm font-semibold uppercase">Download</h2>
-            <ul className="text-white">
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">iOS</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Android</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">Windows</Link>
-              </li>
-              <li className="mb-4">
-                <Link href="#" className="hover:underline">MacOS</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8" />
+      <div className="container py-2">
         <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-white sm:text-center">© 2023 <a href="https://qoinn.com/" className="hover:underline">QOINN™</a>. All Rights Reserved.
+          <span className="text-sm text-white sm:text-center">{theme.strings.footerText || "© 2025 QOINN. All Rights Reserved."}
           </span>
           <div className="flex mt-4 space-x-6 sm:justify-center sm:mt-0">
             <Link href="#" className="text-white hover:text-white">

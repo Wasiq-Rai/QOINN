@@ -135,14 +135,6 @@ export const SiteMetricsDashboard = () => {
                 <h3 className="text-2xl font-bold text-gray-900">
                   {metrics.total_logins.toLocaleString()}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  Conversion:{" "}
-                  {(
-                    (metrics.total_logins / metrics.total_visitors) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </p>
               </div>
             </div>
           </CardContent>
@@ -161,14 +153,6 @@ export const SiteMetricsDashboard = () => {
                 <h3 className="text-2xl font-bold text-gray-900">
                   ${metrics.total_investments}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  Conversion:{" "}
-                  {(
-                    (Number(metrics.total_investments) / metrics.total_logins) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </p>
               </div>
             </div>
           </CardContent>

@@ -28,16 +28,21 @@ import {
   Tooltip,
   TableContainerProps,
   CircularProgress,
+  useMediaQuery,
+  Card,
+  CardContent,
+  Divider,
 } from "@mui/material";
 import { usePremium } from "@/context/PremiumContext";
 import Subscription from "@/app/subscription/subscription";
-import { getStocks } from "@/utils/api";
+import { getStocks, getTogglePremium } from "@/utils/api";
 import { indicators, Stock } from "@/utils/types";
 import TradingViewWidget from "./Charts/TradingViewWidget";
 import { useTheme } from "@/context/ThemeContext";
 import { useUser } from "@clerk/nextjs";
 import EquityDonutChart from "../EquityDonutChart";
 import Image from "next/image";
+import { toast } from "sonner";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-10px); }
@@ -89,7 +94,7 @@ const PremiumOverlay = styled(Box)(({ theme }) => ({
   backdropFilter: "blur(8px)",
   animation: `${fadeIn} 0.5s ease`,
   borderRadius: "16px",
-  opacity: 0.6
+  opacity: 0.6,
 }));
 
 const getStockName = (symbol: string) => {
@@ -100,9 +105,6 @@ const getStockName = (symbol: string) => {
 const compulsorySymbols = ["^GSPC", "^IXIC", "^DJI", "^TNX"];
 
 export function StockList() {
-  const { isPremium } = usePremium();
-  const { isSignedIn } = useUser();
-
   const [stocks, setStocks] = useState<{ [key: string]: Stock } | undefined>();
   const [showSubscription, setShowSubscription] = useState(false);
   const [userSymbols, setUserSymbols] = useState<string[]>([]);
@@ -111,6 +113,20 @@ export function StockList() {
   const [isAdding, setIsAdding] = useState(false);
   const [addedSymbol, setAddedSymbol] = useState("AAPL");
   const { theme } = useTheme();
+  const [showPremium, setShowPremium] = useState(true);
+  const isMobile = useMediaQuery("(max-width:600px)");
+
+  useEffect(() => {
+    getTogglePremium()
+      .then((isVisible) => {
+        console.log("Premium toggle state:", isVisible);
+        setShowPremium(isVisible);
+      })
+      .catch((error) => {
+        toast.error("Failed to fetch premium toggle state");
+        console.error("Error fetching premium toggle state:", error);
+      });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,7 +191,7 @@ export function StockList() {
   return (
     <Box sx={{ position: "relative", width: "100%" }}>
       <StyledTableContainer component={Paper}>
-        {!isPremium || !isSignedIn ? (
+        {!showPremium ? (
           <>
             <PremiumOverlay onClick={() => setShowSubscription(true)}>
               <Lock fontSize="large" sx={{ mb: 2, fontSize: 64 }} />
@@ -221,15 +237,13 @@ export function StockList() {
                   error={!!inputError}
                   helperText={inputError}
                   onKeyPress={(e) => e.key === "Enter" && handleAddSymbol()}
-                  disabled={!isPremium || isAdding}
+                  disabled={isAdding}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           onClick={handleAddSymbol}
-                          disabled={
-                            !inputValue.trim() || !isPremium || isAdding
-                          }
+                          disabled={!inputValue.trim() || isAdding}
                           color="primary"
                         >
                           {isAdding ? (
@@ -276,70 +290,120 @@ export function StockList() {
               </Box>
             </GradientHeader>
 
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Index/Stock</StyledTableCell>
-                  <StyledTableCell align="right">Open</StyledTableCell>
-                  <StyledTableCell align="right">High</StyledTableCell>
-                  <StyledTableCell align="right">Low</StyledTableCell>
-                  <StyledTableCell align="right">Close</StyledTableCell>
-                  <StyledTableCell align="right">Volume</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+            {isMobile ? (
+              // Mobile View: Cards
+              <Stack spacing={2} sx={{ p: 2 }}>
                 {stocks &&
                   Object.entries(stocks).map(([symbol, data]) => (
-                    <TableRow
+                    <Card
                       key={symbol}
                       sx={{
+                        borderRadius: 2,
+                        boxShadow: 3,
                         animation: `${fadeIn} 0.3s ease`,
-                        "&:hover": { background: "rgba(0, 0, 0, 0.03)" },
                       }}
                     >
-                      <StyledTableCell>
-                        <Tooltip title={symbol} arrow>
-                          <span>{getStockName(symbol)}</span>
-                        </Tooltip>
-                      </StyledTableCell>
-                      {hasData(data) ? (
-                        <>
-                          <StyledTableCell align="right">
-                            {data.Open?.toFixed(4) ?? "N/A"}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {data.High?.toFixed(4) ?? "N/A"}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {data.Low?.toFixed(4) ?? "N/A"}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {data.Close?.toFixed(4) ?? "N/A"}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {data.Volume?.toLocaleString() ?? "N/A"}
-                          </StyledTableCell>
-                        </>
-                      ) : (
-                        <TableCell colSpan={6} align="center">
-                          <Box
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            color="text.secondary"
-                            py={2}
-                          >
+                      <CardContent>
+                        <Typography variant="h6" fontWeight="bold">
+                          {getStockName(symbol)}
+                        </Typography>
+                        {hasData(data) ? (
+                          <>
+                            <Divider sx={{ my: 1 }} />
+                            <Typography variant="body2">
+                              Open: {data.Open?.toFixed(4) ?? "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              High: {data.High?.toFixed(4) ?? "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              Low: {data.Low?.toFixed(4) ?? "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              Close: {data.Close?.toFixed(4) ?? "N/A"}
+                            </Typography>
+                            <Typography variant="body2">
+                              Volume: {data.Volume?.toLocaleString() ?? "N/A"}
+                            </Typography>
+                          </>
+                        ) : (
+                          <Box display="flex" alignItems="center" mt={1}>
                             <Warning fontSize="small" sx={{ mr: 1 }} />
                             <Typography variant="body2">
                               No data available for {getStockName(symbol)}
                             </Typography>
                           </Box>
-                        </TableCell>
-                      )}
-                    </TableRow>
+                        )}
+                      </CardContent>
+                    </Card>
                   ))}
-              </TableBody>
-            </Table>
+              </Stack>
+            ) : (
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Index/Stock</StyledTableCell>
+                    <StyledTableCell align="right">Open</StyledTableCell>
+                    <StyledTableCell align="right">High</StyledTableCell>
+                    <StyledTableCell align="right">Low</StyledTableCell>
+                    <StyledTableCell align="right">Close</StyledTableCell>
+                    <StyledTableCell align="right">Volume</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {stocks &&
+                    Object.entries(stocks).map(([symbol, data]) => (
+                      <TableRow
+                        key={symbol}
+                        sx={{
+                          animation: `${fadeIn} 0.3s ease`,
+                          "&:hover": { background: "rgba(0, 0, 0, 0.03)" },
+                        }}
+                      >
+                        <StyledTableCell>
+                          <Tooltip title={symbol} arrow>
+                            <span>{getStockName(symbol)}</span>
+                          </Tooltip>
+                        </StyledTableCell>
+                        {hasData(data) ? (
+                          <>
+                            <StyledTableCell align="right">
+                              {data.Open?.toFixed(4) ?? "N/A"}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">
+                              {data.High?.toFixed(4) ?? "N/A"}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">
+                              {data.Low?.toFixed(4) ?? "N/A"}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">
+                              {data.Close?.toFixed(4) ?? "N/A"}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">
+                              {data.Volume?.toLocaleString() ?? "N/A"}
+                            </StyledTableCell>
+                          </>
+                        ) : (
+                          <TableCell colSpan={6} align="center">
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              color="text.secondary"
+                              py={2}
+                            >
+                              <Warning fontSize="small" sx={{ mr: 1 }} />
+                              <Typography variant="body2">
+                                No data available for {getStockName(symbol)}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            )}
             <TradingViewWidget stockName={addedSymbol} />
             <EquityDonutChart />
           </>

@@ -18,8 +18,8 @@ import {
   TickerData,
 } from "./types";
 import { ThemeContent } from "./themes";
-// export const API_URL = "http://localhost:8000/api";
-export const API_URL = "https://web-production-9b972.up.railway.app/api";
+export const API_URL = "http://localhost:8000/api";
+// export const API_URL = "https://web-production-9b972.up.railway.app/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -121,6 +121,11 @@ export const getStocksHistory = async (symbol: string, period: string, interval:
   return response.data || null;
 };
 
+export const getLiveModels = async (): Promise<any> => {
+  const response = await api.get(`/admin/settings/`);
+  return response.data || null;
+};
+
 export const fetchStockData = async (symbol: string): Promise<StockData> => {
   const response = await api.get<TickerData>(
     `/indicators/fetch_current_value/?symbol=${symbol}`
@@ -161,6 +166,48 @@ export const getAIInsights = async (): Promise<Insight[]> => {
 export const getUserPremiumStatus = async () => {
   const response = await api.get<any>("/user-profiles/premium_status/");
   return response.data.is_premium;
+};
+
+export const updateTogglePremium = async (
+  isVisible: boolean
+) => {
+  const response = await api.post<any>("/toggle-premium/",{
+    is_visible: isVisible
+  });
+  return response;
+};
+
+export const getTogglePremium = async () => {
+  const response = await api.get<any>("/toggle-premium/");
+  return response.data.is_visible;
+};
+
+export const getUpcomingModelsNames= async () => {
+  const response = await api.get<any>("/model-launch/");
+  return response.data.names;
+};
+
+export const updateUpcomingModelsNames = async (
+  names: string
+) => {
+  const response = await api.post<any>("/model-launch/",{
+    names: names
+  });
+  return response;
+};
+
+export const getPerformanceTableData = async () => {
+  const response = await api.get<any>("/performance-table-data/");
+  return response;
+};
+
+export const updatePerformanceData = async (
+  metrics: any
+) => {
+  const response = await api.post<any>("/performance-table-data/",{
+    metrics: metrics
+  });
+  return response;
 };
 
 export const getStockNews = async (): Promise<News[]> => {

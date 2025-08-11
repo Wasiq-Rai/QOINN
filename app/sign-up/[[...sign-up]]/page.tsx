@@ -1,126 +1,31 @@
 'use client'
-import { SignUp } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { SignUp } from "@clerk/nextjs";;
 
-interface Star {
-  x: number;
-  y: number;
-  z: number;
-}
-
-interface Line {
-  x: number;
-  y: number;
-  z: number;
-}
-
-const Stars = () => {
-  const [stars, setStars] = useState<Star[]>([]);
-  const [lines, setLines] = useState<Line[]>([]);
-
-  useEffect(() => {
-    const generateStars = () => {
-      const stars: Star[] = [];
-      for (let i = 0; i < 100; i++) {
-        stars.push({
-          x: Math.random() * 200 - 100,
-          y: Math.random() * 200 - 100,
-          z: Math.random() * 200 - 100,
-        });
-      }
-      setStars(stars);
-    };
-
-    const generateLines = () => {
-      const lines: Line[] = [];
-      for (let i = 0; i < 10; i++) {
-        lines.push({
-          x: Math.random() * 200 - 100,
-          y: Math.random() * 200 - 100,
-          z: Math.random() * 200 - 100,
-        });
-      }
-      setLines(lines);
-    };
-
-    generateStars();
-    generateLines();
-  }, []);
-
-  const AnimatedStar = ({ position }: any) => {
-    useFrame((state, delta) => {
-      position.x += Math.sin(state.clock.elapsedTime) * 0.01;
-      position.y += Math.cos(state.clock.elapsedTime) * 0.01;
-      position.z += Math.sin(state.clock.elapsedTime) * 0.01;
-    });
-
-    return (
-      <mesh position={position}>
-        <sphereGeometry args={[0.1, 32, 32]} />
-        <meshBasicMaterial color="#fff" />
-      </mesh>
-    );
-  };
-
-  const AnimatedLine = ({ position }: any) => {
-    useFrame((state, delta) => {
-      position.x += Math.sin(state.clock.elapsedTime) * 0.01;
-      position.y += Math.cos(state.clock.elapsedTime) * 0.01;
-      position.z += Math.sin(state.clock.elapsedTime) * 0.01;
-    });
-
-    return (
-      <mesh position={position}>
-        <cylinderGeometry args={[0.1, 0.1, 10, 32]} />
-        <meshBasicMaterial color="#fff" />
-      </mesh>
-    );
-  };
-
-  return (
-    <Canvas>
-      {stars.map((star, index) => (
-        <AnimatedStar key={index} position={[star.x, star.y, star.z]} />
-      ))}
-      {lines.map((line, index) => (
-        <AnimatedLine key={index} position={[line.x, line.y, line.z]} />
-      ))}
-    </Canvas>
-  );
-};
 
 const SignUpPage = () => {
   return (
-    <main className="flex items-center justify-evenly h-screen bg-gradient-to-r from-blue-500 to-purple-500">
-      <Stars />
-      <div className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-12">
-        <div className="text-4xl font-bold text-white">
-          <span>Create Your</span>
-          <br />
-          <span>Qoinn Account</span>
-        </div>
-        <div className="my-8 text-xl font-semibold text-white">
+    <main className="relative flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 px-6 py-8 overflow-hidden">
+      {/* Text Section */}
+      <div className="flex flex-col items-center lg:items-start text-center lg:text-left max-w-lg">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-snug">
+          Create Your <br /> Qoinn Account
+        </h1>
+        <p className="my-4 sm:my-6 text-lg sm:text-xl font-semibold text-white">
           Join the Qoinn community and start trading smarter today.
-        </div>
-        <div>
-          <h3 className="my-5 text-white">
-            Sign up for free and discover a new way to trade
-          </h3>
-          <h3 className="my-5 text-white">
-            Connect with online trading experts and stay ahead of the market
-          </h3>
-          <h3 className="my-5 text-white">Your Qoinn journey starts here</h3>
-          <h3 className="my-5 text-white">Trade smarter, not harder, with Qoinn</h3>
-          <h3 className="my-5 text-white">
-            Don't miss out on opportunities. Register for Qoinn today
-          </h3>
+        </p>
+
+        <div className="space-y-3 text-white text-base sm:text-lg">
+          <p>Sign up for free and discover a new way to trade</p>
+          <p>Connect with online trading experts and stay ahead of the market</p>
+          <p>Your Qoinn journey starts here</p>
+          <p>Trade smarter, not harder, with Qoinn</p>
+          <p>Don't miss out on opportunities. Register for Qoinn today</p>
         </div>
       </div>
-      <div className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-12">
-        <div className=" rounded-lg  p-6">
-          <SignUp />
-        </div>
+
+      {/* Sign Up Form */}
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 shadow-lg">
+        <SignUp />
       </div>
     </main>
   );

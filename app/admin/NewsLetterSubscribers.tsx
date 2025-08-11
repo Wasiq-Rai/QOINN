@@ -78,7 +78,7 @@ export function NewsletterSubscribers() {
       
       if (!response) throw new Error('Failed to update subscriber');
       
-      setSubscribers(subscribers.map(sub => 
+      setSubscribers(subscribers?.map(sub => 
         sub.id === id ? { ...sub, is_active: !sub.is_active } : sub
       ));
       toast.success('Subscription status updated');
@@ -133,7 +133,7 @@ export function NewsletterSubscribers() {
       // await exportNewsLetterSubscribers(); // Uncomment if using API endpoint
       
       // Option 2: Generate Excel file on client side
-      const data = subscribers.map(sub => ({
+      const data = subscribers?.map(sub => ({
         Email: sub.email,
         Status: sub.is_active ? 'Active' : 'Inactive',
         'Subscribed On': new Date(sub.created_at).toLocaleDateString(),
@@ -263,7 +263,7 @@ export function NewsletterSubscribers() {
                 </TableCell>
               </TableRow>
             ) : (
-              subscribers.map((subscriber) => (
+              subscribers?.map((subscriber) => (
                 <TableRow key={subscriber.id}>
                   <TableCell>{subscriber.email}</TableCell>
                   <TableCell>
