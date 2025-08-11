@@ -33,16 +33,15 @@ import {
   CardContent,
   Divider,
 } from "@mui/material";
-import { usePremium } from "@/context/PremiumContext";
 import Subscription from "@/app/subscription/subscription";
 import { getStocks, getTogglePremium } from "@/utils/api";
-import { indicators, Stock } from "@/utils/types";
+import { Stock } from "@/utils/types";
 import TradingViewWidget from "./Charts/TradingViewWidget";
 import { useTheme } from "@/context/ThemeContext";
-import { useUser } from "@clerk/nextjs";
 import EquityDonutChart from "../EquityDonutChart";
 import Image from "next/image";
 import { toast } from "sonner";
+import { getStockName } from "@/lib/utils";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-10px); }
@@ -96,11 +95,6 @@ const PremiumOverlay = styled(Box)(({ theme }) => ({
   borderRadius: "16px",
   opacity: 0.6,
 }));
-
-const getStockName = (symbol: string) => {
-  const indicator = indicators.find((ind) => ind.symbol === symbol);
-  return indicator ? indicator.name : symbol;
-};
 
 const compulsorySymbols = ["^GSPC", "^IXIC", "^DJI", "^TNX"];
 

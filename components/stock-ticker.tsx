@@ -53,7 +53,7 @@ export function StockTicker() {
             key={item.symbol}
             className="flex items-center px-6 gap-2 border-r border-gray-700"
           >
-            <span className="font-semibold text-lg">{item.symbol}</span>
+            <span className="font-semibold text-lg">{item.name}</span>
             <span className="text-gray-300">
               ${prices[item.symbol]?.toFixed(2) || "---"}
             </span>
