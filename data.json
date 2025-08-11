@@ -37,6 +37,16 @@
       "message": "",
       "slotId": "night",
       "isApproved": false
+    },
+    {
+      "id": "1754881937876",
+      "name": "Wasiq Rai",
+      "email": "tradingbotfa20@gmail.com",
+      "phone": "+923374873812",
+      "investmentAmount": 2131,
+      "message": "Hello",
+      "slotId": "afternoon",
+      "isApproved": false
     }
   ]
 }

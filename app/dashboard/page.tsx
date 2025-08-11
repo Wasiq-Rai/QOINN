@@ -13,6 +13,7 @@ import QoinnExplainer from "../qoinn-detail/page";
 import NewsSection from "../news/page";
 import { SiteMetricsDashboard } from "../visitors/SiteMetricsDashboard";
 import Contact from "@/components/contact";
+import PerformanceTable from "@/components/dashboard/PerformanceTable";
 
 export const metadata: Metadata = {
   title: "QOINN Dashboard",

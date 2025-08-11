@@ -22,6 +22,8 @@ import { Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { NewsletterSubscribers } from "./NewsLetterSubscribers";
 import MeetingsPanel from "@/components/meeting/AdminMeetingsPanel";
+import PremiumToggle from "./PremiumToggle";
+import AdminFileManager from "./AdminFileManager";
 
 export default function AdminPage() {
   const { user } = useUser();
@@ -156,6 +158,17 @@ export default function AdminPage() {
           </Card>
           <Card className="md:col-span-2">
             <CardHeader>
+              <CardTitle>Premium Component Visibility</CardTitle>
+              <CardDescription>
+                Set Premium Component visibility
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PremiumToggle/>
+            </CardContent>
+          </Card>
+          <Card className="md:col-span-2">
+            <CardHeader>
               <CardTitle>News Letter Subscribers</CardTitle>
               <CardDescription>
                 Manage subscribers
@@ -177,8 +190,20 @@ export default function AdminPage() {
               <AdminEquityManager />
             </CardContent>
           </Card>
+
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Performance Charts Files</CardTitle>
+              <CardDescription>
+                Upload modals files here
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdminFileManager/>
+            </CardContent>
+          </Card>
         </div>
-        <Box>
+        <Box className="mt-12">
           <EquityDonutChart />
           <ThemeEditor />
         </Box>

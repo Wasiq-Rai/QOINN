@@ -13,10 +13,10 @@ const Contact = () => {
               <h2 className="text-3xl font-bold text-center md:text-left md:ml-4 mb-4 md:mb-0">
                 {theme.strings.investWithQoinn}
               </h2>
-              <p className="text-lg text-gray-600 text-center md:text-left md:ml-4 mb-4 md:mb-0">
+              <p className="text-[20px] text-gray-600 text-center md:text-left md:ml-4 mb-4 md:mb-0">
                 {theme.strings.investDescription}
               </p>
-              <p className="text-lg text-gray-600 text-center md:text-left md:ml-4 mb-4 md:mb-0">
+              <p className="text-[20px] text-gray-600 text-center md:text-left md:ml-4 mb-4 md:mb-0">
                 {"Schedule a meeting for the best use of your investment options"}
               </p>
               <Link href="/invest">

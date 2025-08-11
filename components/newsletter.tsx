@@ -1,13 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { subscribeToNewsLetter, checkSubscriptionStatus, unsubscribeFromNewsLetter } from "@/utils/api";
+import {
+  subscribeToNewsLetter,
+  checkSubscriptionStatus,
+  unsubscribeFromNewsLetter,
+  getUpcomingModelsNames,
+  updateUpcomingModelsNames,
+} from "@/utils/api";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { MailCheck, Rocket, AlertCircle, MailX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAdmin } from "@/context/AdminContext";
 
 export function Newsletter() {
   const { isSignedIn, user } = useUser();
@@ -20,12 +27,37 @@ export function Newsletter() {
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [modelNames, setModelNames] = useState("M22, M23");
+  const { isAdmin } = useAdmin();
+  const [editValue, setEditValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    getUpcomingModelsNames()
+      .then((names) => {
+        setModelNames(names);
+        setEditValue(names);
+      })
+      .catch((error) => {
+        toast.error("Failed to fetch upcoming models names");
+        console.error("Error fetching upcoming models names:", error);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    updateUpcomingModelsNames(editValue).catch((error) => {
+      toast.error("Failed to update upcoming models names");
+      console.error("Error updating upcoming models names:", error);
+    });
+    setModelNames(editValue);
+    setIsEditing(false);
+  };
 
   // Check subscription status when email changes
   useEffect(() => {
     const checkStatus = async () => {
       if (!email) return;
-      
+
       setIsCheckingStatus(true);
       try {
         const status = await checkSubscriptionStatus(email);
@@ -48,14 +80,14 @@ export function Newsletter() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isSignedIn) {
-      router.push("/sign-in")
+      router.push("/sign-in");
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const response = await subscribeToNewsLetter(email);
 
@@ -69,24 +101,25 @@ export function Newsletter() {
 
       setSubscriptionStatus({
         isSubscribed: true,
-        isActive: response.data.is_active
+        isActive: response.data.is_active,
       });
-      
+
       toast.success("Successfully subscribed to our newsletter!😍", {
-        description: "You'll receive our latest updates and insights."
+        description: "You'll receive our latest updates and insights.",
       });
     } catch (error: any) {
-      let errorMessage = error.message || "Failed to subscribe. Please try again.";
-      
+      let errorMessage =
+        error.message || "Failed to subscribe. Please try again.";
+
       if (errorMessage.includes("already subscribed")) {
         errorMessage = "You're already subscribed!";
       } else if (errorMessage.includes("inactive")) {
         errorMessage = "Your subscription is inactive. Please contact support.";
       }
-      
+
       toast.error("Subscription Failed", {
         description: errorMessage,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsLoading(false);
@@ -97,23 +130,24 @@ export function Newsletter() {
     setIsLoading(true);
     try {
       const response = await unsubscribeFromNewsLetter(email);
-      
+
       if (response.error) {
         throw new Error(response.error);
       }
 
       setSubscriptionStatus({
         isSubscribed: false,
-        isActive: false
+        isActive: false,
       });
-      
+
       toast.success("You've been unsubscribed", {
-        description: "You won't receive further updates from our newsletter."
+        description: "You won't receive further updates from our newsletter.",
       });
     } catch (error: any) {
       toast.error("Unsubscribe Failed", {
-        description: error.message || "Failed to unsubscribe. Please try again.",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />
+        description:
+          error.message || "Failed to unsubscribe. Please try again.",
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsLoading(false);
@@ -134,14 +168,17 @@ export function Newsletter() {
               <div className="absolute inset-0 bg-green-100 rounded-full blur-lg animate-pulse" />
               <MailCheck className="h-16 w-16 text-green-600 relative z-10" />
             </div>
-            
+
             <h1 className="mb-4 text-4xl font-bold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
               You're subscribed!
             </h1>
-            
+
             <p className="mb-8 text-lg font-normal text-gray-600 lg:text-xl max-w-2xl mx-auto dark:text-gray-300">
               You'll receive QOINN updates at{" "}
-              <span className="font-semibold text-blue-600 dark:text-blue-400">{email}</span>.
+              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                {email}
+              </span>
+              .
             </p>
 
             <div className="flex gap-4">
@@ -192,22 +229,52 @@ export function Newsletter() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-sm font-medium">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-sm font-medium">
             <Rocket className="h-4 w-4" />
-            QOINN is launching models M16 and M17 soon
-          </span>
-          
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  className="border px-2 py-1 rounded text-sm"
+                />
+                <button
+                  onClick={handleSave}
+                  className="text-blue-600 font-semibold"
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <>
+                QOINN is launching models {modelNames} soon
+                {isAdmin && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="ml-2 text-xs text-blue-500 underline"
+                  >
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
           <h1 className="mb-4 font-flek text-3xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
             Stay updated with QOINN
           </h1>
-          
+
           <p className="mb-8 font-flek text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-200">
-            Subscribe to our newsletter for the latest insights, performance updates, and exclusive offers.
+            Subscribe to our newsletter for the latest insights, performance
+            updates, and exclusive offers.
           </p>
 
           <Button
             onClick={handleSubmit}
-            className={`h-12 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+            className={`h-12 ${
+              isLoading ? "opacity-70 cursor-not-allowed" : ""
+            }`}
             disabled={isLoading || isCheckingStatus}
           >
             {isLoading ? (
@@ -238,7 +305,7 @@ export function Newsletter() {
               "Subscribe Now"
             )}
           </Button>
-          
+
           <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
             We respect your privacy. Unsubscribe at any time.
           </p>

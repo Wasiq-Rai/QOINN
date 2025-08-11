@@ -36,6 +36,7 @@ import {
 } from "@mui/icons-material";
 
 import {
+  getLiveModels,
   getPerformanceData,
   saveModelData,
   TIMELINE_CONFIGS,
@@ -45,11 +46,26 @@ import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
 import { useAdmin } from "@/context/AdminContext";
 import { useTheme } from "@/context/ThemeContext";
+import PerformanceTable from "./PerformanceTable";
 
 const LINE_COLORS = {
   MODEL: "#1976d2", // Blue
   SPY: "#2e7d32", // Dark Green
   VOO: "#ffa726", // Orange
+};
+
+// Enhanced TIMELINE_CONFIGS with 5-year option
+const ENHANCED_TIMELINE_CONFIGS = {
+  ...TIMELINE_CONFIGS,
+  "5y": {
+    label: "5 Years",
+    expectedLength: 1260, // Approximate days in 5 years (365 * 5)
+  },
+  ...TIMELINE_CONFIGS,
+  "6y": {
+    label: "6 Years",
+    expectedLength: 1512, // Approximate days in 5 years (365 * 5)
+  },
 };
 
 const PerformanceChart = () => {
@@ -59,7 +75,10 @@ const PerformanceChart = () => {
   const [simulatedData, setSimulatedData] = useState<ChartData | null>(null);
   const [realData, setRealData] = useState<ChartData | null>(null);
 
-  const [activeModel, setActiveModel] = useState("M17");
+  const [liveModels, setLiveModels] = useState([]);
+  const [activeModel, setActiveModel] = useState<string>(
+    liveModels[0] || "M21"
+  );
   const [activeTimeline, setActiveTimeline] = useState("2y");
 
   // Separate edit modes
@@ -120,6 +139,22 @@ const PerformanceChart = () => {
     }
   }, [startDate, realData]);
 
+  useEffect(() => {
+    const getLiveChartModels = async () => {
+      try {
+        const liveModels = await getLiveModels();
+        if (liveModels && liveModels.selected_modals.length > 0) {
+          setLiveModels(liveModels.selected_modals);
+        } else {
+          setLiveModels([]);
+        }
+      } catch (error) {
+        console.error("Error fetching live models:", error);
+      }
+    };
+    getLiveChartModels();
+  }, []);
+
   const normalize = (data: ChartData): number[] => {
     const modelValues = data?.model ? data?.model[0] : [];
     if (!modelValues.length) return [];
@@ -137,6 +172,29 @@ const PerformanceChart = () => {
         minValue
       );
     });
+  };
+
+  // Enhanced function to calculate Y-axis domain with custom scaling
+  const calculateYAxisDomain = (data: any[]) => {
+    if (!data || data.length === 0) return ["auto", "auto"];
+
+    const allValues: number[] = [];
+    data.forEach((item) => {
+      if (typeof item.SPY === "number") allValues.push(item.SPY);
+      if (typeof item.VOO === "number") allValues.push(item.VOO);
+      if (typeof item.Model === "number") allValues.push(item.Model);
+    });
+
+    if (allValues.length === 0) return ["auto", "auto"];
+
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+
+    // Apply the requested scaling: min * 0.95 to max * 1.05
+    const scaledMin = minValue * 0.95;
+    const scaledMax = maxValue * 1.05;
+
+    return [scaledMin, scaledMax];
   };
 
   // Fetch performance data
@@ -260,7 +318,6 @@ const PerformanceChart = () => {
         normalizedValues,
         chartType === "simulated"
       );
-      console.log("Save successful:", response);
     } catch (error) {
       console.error("Failed to save model data:", error);
     }
@@ -367,7 +424,7 @@ const PerformanceChart = () => {
       const content = await file.text();
       const uploadedData = parseUploadedFile(content);
 
-      const config = Object.values(TIMELINE_CONFIGS).find(
+      const config = Object.values(ENHANCED_TIMELINE_CONFIGS).find(
         (cfg) => cfg.expectedLength === uploadedData.length
       );
 
@@ -416,7 +473,7 @@ const PerformanceChart = () => {
       const content = await file.text();
       const uploadedData = parseUploadedFile(content);
 
-      const config = Object.values(TIMELINE_CONFIGS).find(
+      const config = Object.values(ENHANCED_TIMELINE_CONFIGS).find(
         (cfg) => cfg.expectedLength === uploadedData.length
       );
 
@@ -507,7 +564,7 @@ const PerformanceChart = () => {
     updateChartData("real");
   }, [absoluteMode]);
 
-  // Render function modified to handle both charts
+  // Render function modified to handle both charts with enhanced Y-axis
   const renderPerformanceChart = (
     chartData: ChartData,
     chartType: "simulated" | "real",
@@ -516,95 +573,122 @@ const PerformanceChart = () => {
   ) => {
     const processedData = processChartData(chartData, chartType);
     const isSimulated = chartType === "simulated";
+    const yAxisDomain = calculateYAxisDomain(processedData);
 
     return (
-      <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
-        <h1 className="mb-4 text-3xl text-center pt-2 font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
-          <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-            {isSimulated
-              ? theme.strings.simulatedPerformance
-              : theme.strings.realPerformance}
-          </span>
-        </h1>
-        {!isSimulated && (
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={2}
-            sx={{
-              p: 2,
-              backgroundColor: "rgba(0,0,0,0.03)",
-              borderRadius: 2,
-              border: `1px solid ${"rgba(0,0,0,0.1)"}`,
-              maxWidth: "fit-content",
-              ml: "auto",
-              mr: "auto",
-            }}
-          >
-            <Typography
-              variant="h6"
+      <Paper
+        elevation={3}
+        sx={{
+          p: 3,
+          height: "100%",
+          borderRadius: 3,
+          background: "rgba(255, 255, 255, 0.6)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          gap={2}
+        >
+          <h1 className="font-extrabold text-gray-900 dark:text-white text-3xl md:text-5xl lg:text-6xl">
+            <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+              {isSimulated
+                ? theme.strings.simulatedPerformance
+                : theme.strings.realPerformance}
+            </span>
+          </h1>
+
+          {!isSimulated && (
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              alignItems={{ xs: "stretch", sm: "center" }}
+              gap={1.5}
               sx={{
-                fontWeight: 600,
-                color: "rgba(0,0,0,0.8)",
+                background: "rgba(255,255,255,0.4)",
+                borderRadius: 3,
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                p: 1.5,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                flexDirection: { xs: "column", sm: "row" }, // Stack on mobile
               }}
             >
-              View Performance From:
-            </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: "rgba(0,0,0,0.8)",
+                  fontSize: "1rem",
+                  whiteSpace: { xs: "normal", sm: "nowrap" }, // Allow wrapping on mobile
+                }}
+              >
+                View From:
+              </Typography>
 
-            <TextField
-              type="date"
-              value={startDate}
-              onChange={handleDateChange}
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 1,
-                  "& fieldset": {
-                    borderColor: "rgba(0,0,0,0.2)",
+              <TextField
+                type="date"
+                value={startDate}
+                onChange={handleDateChange}
+                size="small"
+                sx={{
+                  flex: { xs: "1 1 auto", sm: "unset" },
+                  width: { xs: "100%", sm: "auto" },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255,255,255,0.7)",
+                    backdropFilter: "blur(4px)",
+                    "& fieldset": {
+                      borderColor: "rgba(0,0,0,0.1)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "rgba(0,0,0,0.3)",
+                    },
                   },
-                },
-                "& .MuiInputBase-input": {
-                  py: 1,
-                  px: 1.5,
-                  fontSize: "0.875rem",
-                },
-              }}
-              InputLabelProps={{
-                shrink: true,
-                sx: {
-                  color: "rgba(0,0,0,0.6)",
-                },
-              }}
-              inputProps={{
-                max: new Date().toISOString().split("T")[0],
-                sx: {
-                  color: "#000",
-                },
-              }}
-            />
+                  "& .MuiInputBase-input": {
+                    py: 1.2,
+                    px: 1.5,
+                    fontSize: "0.9rem",
+                    color: "rgba(0,0,0,0.9)",
+                  },
+                }}
+                inputProps={{
+                  max: new Date().toISOString().split("T")[0],
+                }}
+              />
 
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setStartDate("")}
-              sx={{
-                textTransform: "none",
-                borderRadius: 1,
-                px: 2,
-                py: 1,
-                borderWidth: 1,
-                "&:hover": {
-                  borderWidth: 1,
-                  backgroundColor: "rgba(0,0,0,0.04)",
-                },
-                color: "rgba(0,0,0,0.8)",
-                borderColor: "rgba(0,0,0,0.2)",
-              }}
-            >
-              Reset
-            </Button>
-          </Box>
-        )}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setStartDate("")}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  px: 2,
+                  py: 1,
+                  fontWeight: 500,
+                  fontSize: "0.85rem",
+                  borderColor: "rgba(0,0,0,0.15)",
+                  color: "rgba(0,0,0,0.8)",
+                  backgroundColor: "rgba(255,255,255,0.5)",
+                  backdropFilter: "blur(2px)",
+                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                  "&:hover": {
+                    borderColor: "rgba(0,0,0,0.3)",
+                    backgroundColor: "rgba(255,255,255,0.7)",
+                  },
+                }}
+              >
+                Reset
+              </Button>
+            </Box>
+          )}
+        </Box>
+
         <Box display="flex" justifyContent="end" alignItems="center" mb={2}>
           <Box display="flex" gap={1}>
             <IconButton onClick={() => toggleFullscreen(chartType)}>
@@ -624,18 +708,11 @@ const PerformanceChart = () => {
                 <EditIcon />
               </IconButton>
             )}
-            {isAdmin && (
-              <FileUploadButton
-                handleFileUpload={
-                  isSimulated ? handleSimulatedFileUpload : handleRealFileUpload
-                }
-              />
-            )}
           </Box>
         </Box>
 
         <div ref={ref}>
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={600}>
             <LineChart data={processedData}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
               <XAxis
@@ -643,14 +720,18 @@ const PerformanceChart = () => {
                 tick={{ fill: "#666" }}
                 tickFormatter={(tick) => format(new Date(tick), "MMM d")}
               />
+              {/* Enhanced Y-axis with larger width and custom domain */}
               <YAxis
+                domain={yAxisDomain}
                 tickFormatter={(tick) =>
                   dataType === "percentage"
                     ? `${tick.toFixed(0)}%`
                     : tick.toFixed(2)
                 }
-                width={80}
-                tick={{ fill: "#666" }}
+                width={80} // Increased from 80 to 120 for larger Y-axis
+                height={120}
+                tick={{ fill: "#666", fontSize: 12 }}
+                tickCount={200} // More tick marks for better granularity
               />
               <Tooltip
                 contentStyle={{
@@ -757,14 +838,24 @@ const PerformanceChart = () => {
   return (
     <>
       <PerformanceSummary modelData={simulatedModelData} dataType={dataType} />
+      <PerformanceTable />
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Box display="flex" gap={2} mb={2}>
+            <Box
+              display="flex"
+              flexWrap="wrap"
+              gap={2}
+              mb={2}
+              sx={{
+                flexDirection: { xs: "column", sm: "row" }, // Stack on mobile, row on larger screens
+              }}
+            >
+              {/* Model Selector */}
               <FormControl
                 variant="outlined"
                 size="small"
-                sx={{ minWidth: 120 }}
+                sx={{ minWidth: { xs: "100%", sm: 120 } }}
               >
                 <InputLabel>Model</InputLabel>
                 <Select
@@ -772,7 +863,7 @@ const PerformanceChart = () => {
                   onChange={(e) => setActiveModel(e.target.value as string)}
                   label="Model"
                 >
-                  {["M15", "M16", "M17"].map((model) => (
+                  {liveModels?.map((model) => (
                     <MenuItem key={model} value={model}>
                       {model}
                     </MenuItem>
@@ -780,10 +871,11 @@ const PerformanceChart = () => {
                 </Select>
               </FormControl>
 
+              {/* Timeline Selector */}
               <FormControl
                 variant="outlined"
                 size="small"
-                sx={{ minWidth: 120 }}
+                sx={{ minWidth: { xs: "100%", sm: 120 } }}
               >
                 <InputLabel>Timeline</InputLabel>
                 <Select
@@ -791,18 +883,21 @@ const PerformanceChart = () => {
                   onChange={(e) => setActiveTimeline(e.target.value as string)}
                   label="Timeline"
                 >
-                  {Object.entries(TIMELINE_CONFIGS).map(([key, config]) => (
-                    <MenuItem key={key} value={key}>
-                      {config.label}
-                    </MenuItem>
-                  ))}
+                  {Object.entries(ENHANCED_TIMELINE_CONFIGS).map(
+                    ([key, config]) => (
+                      <MenuItem key={key} value={key}>
+                        {config.label}
+                      </MenuItem>
+                    )
+                  )}
                 </Select>
               </FormControl>
 
+              {/* Data Type Selector */}
               <FormControl
                 variant="outlined"
                 size="small"
-                sx={{ minWidth: 120 }}
+                sx={{ minWidth: { xs: "100%", sm: 120 } }}
               >
                 <InputLabel>Data Type</InputLabel>
                 <Select
@@ -817,11 +912,12 @@ const PerformanceChart = () => {
                 </Select>
               </FormControl>
 
+              {/* Mode Selector (Only for Absolute) */}
               {dataType === "absolute" && (
                 <FormControl
                   variant="outlined"
                   size="small"
-                  sx={{ minWidth: 120 }}
+                  sx={{ minWidth: { xs: "100%", sm: 120 } }}
                 >
                   <InputLabel>Mode</InputLabel>
                   <Select
