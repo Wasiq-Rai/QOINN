@@ -590,11 +590,12 @@ const PerformanceChart = () => {
         <Box
           display="flex"
           alignItems="center"
-          justifyContent="space-between"
-          flexWrap="wrap"
+          justifyContent={`${isSimulated ? "center" : "space-between"}`}
+          // flexWrap="wrap"
           gap={2}
         >
-          <h1 className="font-extrabold text-gray-900 dark:text-white text-3xl md:text-5xl lg:text-6xl">
+          {!isSimulated && <div className="w-full"></div>}
+          <h1 className="text-center font-extrabold text-gray-900 dark:text-white text-3xl md:text-5xl lg:text-6xl w-full">
             <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
               {isSimulated
                 ? theme.strings.simulatedPerformance
@@ -614,6 +615,7 @@ const PerformanceChart = () => {
                 backdropFilter: "blur(8px)",
                 border: "1px solid rgba(255,255,255,0.3)",
                 p: 1.5,
+                width: "100%",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                 flexDirection: { xs: "column", sm: "row" }, // Stack on mobile
               }}
