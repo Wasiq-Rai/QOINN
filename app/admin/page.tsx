@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAvailableSlots } from "@/app/actions";
 import { useEquity } from "@/context/EquityContext";
-import AdminSlotManager from "@/components/meeting/AdminSlotManager";
 import { AdminEquityManager } from "./AdminEquityManager";
 import { Bell, Lock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,15 +27,6 @@ export default function AdminPage() {
   const { user } = useUser();
   const isAdmin = user?.publicMetadata?.role === 'admin';
   const { equityPercentage } = useEquity();
-  const [slots, setSlots] = useState<any>([]);
-
-  useEffect(() => {
-    const getSlots = async () => {
-      const slots = await getAvailableSlots();
-      setSlots(slots);
-    };
-    getSlots();
-  }, []);
 
   if (!isAdmin) {
     return (
@@ -127,7 +116,7 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                You have {slots.length} available slots and the current equity
+                The current equity
                 percentage is {equityPercentage || "N/A"}.
               </p>
             </CardContent>

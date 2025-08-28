@@ -17,31 +17,21 @@ import {
   FormControl,
 } from "@mui/material"
 import { Check, DoneAll } from "@mui/icons-material"
-import { getSlots, readData, writeData } from "@/app/actions"
-import { approveInvestmentMeeting } from "@/app/actions"
-
-interface Slot {
-  id: string
-  datetime: string
-  isBooked: boolean
-}
+import { approveInvestmentMeeting, getAllMeetings, markMeetingComplete } from "@/app/actions"
 
 interface Meeting {
   id: string
   name: string
   email: string
   phone: string
-  investmentAmount: number
+  investment_amount: number
   message: string
-  slotId: string
-  isApproved: boolean
-  isCompleted?: boolean
-  slot?: Slot
+  is_approved: boolean
+  is_completed?: boolean
 }
 
 export default function MeetingsPanel() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
-  const [slots, setSlots] = useState<Slot[]>([])
   const [filter, setFilter] = useState("all")
 
   useEffect(() => {
@@ -49,44 +39,44 @@ export default function MeetingsPanel() {
   }, [])
 
   const fetchData = async () => {
-    const { slots, meetings } = await readData()
-    const enrichedMeetings = meetings.map((m) => ({
-      ...m,
-      slot: slots.find((s) => s.id === m.slotId),
-    }))
-    setSlots(slots)
-    setMeetings(enrichedMeetings)
+    try {
+      const data = await getAllMeetings()
+      setMeetings(data)
+    } catch (error) {
+      console.error("Error fetching meetings:", error)
+    }
   }
 
   const handleApprove = async (id: string) => {
-    const updatedMeetings = meetings.map((m) =>
-      m.id === id ? { ...m, isApproved: true } : m
-    )
-    await writeData({ meetings: updatedMeetings, slots })
-    approveInvestmentMeeting(id);
-    fetchData()
+    try {
+      await approveInvestmentMeeting(id)
+      fetchData()
+    } catch (error) {
+      console.error("Error approving meeting:", error)
+    }
   }
 
   const handleComplete = async (id: string) => {
-    const updatedMeetings = meetings.map((m) =>
-      m.id === id ? { ...m, isCompleted: true } : m
-    )
-    await writeData({ meetings: updatedMeetings, slots })
-    fetchData()
+    try {
+      await markMeetingComplete(id)
+      fetchData()
+    } catch (error) {
+      console.error("Error marking complete:", error)
+    }
   }
 
   const filteredMeetings = meetings.filter((m) => {
     if (filter === "all") return true
-    if (filter === "approved") return m.isApproved
-    if (filter === "pending") return !m.isApproved
-    if (filter === "completed") return m.isCompleted
+    if (filter === "approved") return m.is_approved
+    if (filter === "pending") return !m.is_approved
+    if (filter === "completed") return m.is_completed
     return true
   })
 
   const statusSummary = {
-    approved: meetings.filter((m) => m.isApproved && !m.isCompleted).length,
-    pending: meetings.filter((m) => !m.isApproved).length,
-    completed: meetings.filter((m) => m.isCompleted).length,
+    approved: meetings.filter((m) => m.is_approved && !m.is_completed).length,
+    pending: meetings.filter((m) => !m.is_approved).length,
+    completed: meetings.filter((m) => m.is_completed).length,
   }
 
   return (
@@ -126,7 +116,6 @@ export default function MeetingsPanel() {
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Amount</TableCell>
-                <TableCell>Slot</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -137,17 +126,16 @@ export default function MeetingsPanel() {
                   <TableCell>{meeting.name}</TableCell>
                   <TableCell>{meeting.email}</TableCell>
                   <TableCell>{meeting.phone}</TableCell>
-                  <TableCell>${meeting.investmentAmount.toLocaleString()}</TableCell>
-                  <TableCell>{meeting.slot?.datetime || meeting.slotId}</TableCell>
+                  <TableCell>${meeting.investment_amount.toLocaleString()}</TableCell>
                   <TableCell>
-                    {meeting.isCompleted
+                    {meeting.is_completed
                       ? "Completed"
-                      : meeting.isApproved
+                      : meeting.is_approved
                       ? "Approved"
                       : "Pending"}
                   </TableCell>
                   <TableCell>
-                    {!meeting.isApproved && (
+                    {!meeting.is_approved && (
                       <Button
                         onClick={() => handleApprove(meeting.id)}
                         variant="contained"
@@ -159,7 +147,7 @@ export default function MeetingsPanel() {
                         Approve
                       </Button>
                     )}
-                    {meeting.isApproved && !meeting.isCompleted && (
+                    {meeting.is_approved && !meeting.is_completed && (
                       <Button
                         onClick={() => handleComplete(meeting.id)}
                         variant="contained"

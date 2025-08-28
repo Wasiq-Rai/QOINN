@@ -113,7 +113,6 @@ export function StockList() {
   useEffect(() => {
     getTogglePremium()
       .then((isVisible) => {
-        console.log("Premium toggle state:", isVisible);
         setShowPremium(isVisible);
       })
       .catch((error) => {

@@ -1,85 +1,81 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Grid, 
-  Typography, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem,
-  Paper
-} from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { scheduleInvestmentMeeting } from '@/app/actions';
-import { useUser } from '@clerk/nextjs';
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  TextField,
+  Grid,
+  Typography,
+  Paper,
+  CircularProgress,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import { scheduleInvestmentMeeting } from "@/app/actions";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 export default function InvestmentForm() {
   const router = useRouter();
   const { user } = useUser();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email:  '',
-    phone: '',
-    investmentAmount: '',
-    message: '',
-    selectedSlot: ''
+    name: "",
+    email: "",
+    phone: "",
+    investmentAmount: 0,
+    message: "",
   });
 
   useEffect(() => {
     if (user && user.primaryEmailAddress) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        email: user.primaryEmailAddress?.emailAddress || ''
+        email: user.primaryEmailAddress?.emailAddress || "",
       }));
     }
   }, [user]);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name as string]: value
+      [name]: name === "investmentAmount" ? Number(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true); // start loader
     try {
       const response = await scheduleInvestmentMeeting(formData);
-      response.success 
-        ? router.push("/invest/confirmation")
-        : console.error("Meeting scheduling failed");
+      if (response.success) {
+        router.push("/invest/confirmation");
+      } else {
+        toast.error("Meeting scheduling failed");
+      }
     } catch (error) {
-      console.error("Error scheduling meeting:", error);
+      toast.error("Error scheduling meeting. Try again later");
+    } finally {
+      setLoading(false); // stop loader
     }
   };
 
-  const timeSlots = [
-    { value: "morning", label: "Morning 10:00 AM - 12:00 pm" },
-    { value: "afternoon", label: "Afternoon 2:00 PM - 5:00 pm" },
-    { value: "night", label: "Night 8:00 PM - 11:00 pm" }
-  ];
-
   return (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 4, 
+    <Paper
+      elevation={3}
+      sx={{
+        p: 4,
         borderRadius: 3,
-        boxShadow: '0 8px 24px rgba(14, 74, 128, 0.1)',
-        minHeight: "560px"
+        boxShadow: "0 8px 24px rgba(14, 74, 128, 0.1)",
+        minHeight: "560px",
       }}
     >
-      <Typography 
-        variant="h5" 
-        sx={{ 
-          mb: 3, 
-          textAlign: 'center', 
-          color: '#0E4A80', 
-          fontWeight: 'bold' 
+      <Typography
+        variant="h5"
+        sx={{
+          mb: 3,
+          textAlign: "center",
+          color: "#0E4A80",
+          fontWeight: "bold",
         }}
       >
         Schedule Investment Meeting
@@ -104,7 +100,7 @@ export default function InvestmentForm() {
               name="email"
               type="email"
               value={user?.primaryEmailAddress?.emailAddress || formData.email}
-              disabled = {user?.primaryEmailAddress?.emailAddress ? true : false}
+              disabled={!!user?.primaryEmailAddress?.emailAddress}
               required
               onChange={handleChange}
               variant="outlined"
@@ -147,45 +143,33 @@ export default function InvestmentForm() {
             />
           </Grid>
           <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel>Available Time Slots</InputLabel>
-              <Select
-                name="selectedSlot"
-                value={formData.selectedSlot}
-                onChange={handleChange}
-                label="Available Time Slots"
-                required
-              >
-                {timeSlots.map((slot) => (
-                  <MenuItem key={slot.value} value={slot.value}>
-                    {slot.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ 
+              disabled={loading} // prevent multiple clicks
+              sx={{
                 mt: 2,
-                backgroundColor: '#0E4A80',
-                '&:hover': {
-                  backgroundColor: '#1E6BBD'
-                }
+                backgroundColor: "#0E4A80",
+                "&:hover": {
+                  backgroundColor: "#1E6BBD",
+                },
               }}
             >
-              Schedule Meeting
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : (
+                "Schedule Meeting"
+              )}
             </Button>
-            <img 
-                  src="/img/logo/logo-name.png" 
-                  alt="QOINN Logo" 
-                  width="auto"
-                  height="auto"
-                  style={{ maxWidth: 250, marginBottom: 16, paddingTop: "20px" }}
-                />
+
+            <img
+              src="/img/logo/logo-name.png"
+              alt="QOINN Logo"
+              width="auto"
+              height="auto"
+              style={{ maxWidth: 250, marginBottom: 16, paddingTop: "20px" }}
+            />
           </Grid>
         </Grid>
       </form>

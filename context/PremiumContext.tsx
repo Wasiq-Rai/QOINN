@@ -30,7 +30,6 @@ const checkPremiumStatus = async () => {
 
   try {
     const res = await fetch(`${API_URL}/userprofile/premium_status/?email=${user.primaryEmailAddress?.emailAddress}`);
-    console.log(res)
     const data = await res.json();
     setIsPremium(data.is_premium);
   } catch (err) {
