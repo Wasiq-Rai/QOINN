@@ -33,7 +33,7 @@ const HeroSection = () => {
           setCurrentIndex((prev) => (prev + 1) % strings.length);
           runCycle(); // start next cycle
         }, 1000); // fade duration
-      }, 4000); // visible duration
+      }, 8000); // visible duration
     };
 
     runCycle();

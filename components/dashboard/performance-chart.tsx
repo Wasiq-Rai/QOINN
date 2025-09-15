@@ -96,8 +96,8 @@ const PerformanceChart = () => {
     number[]
   >([]);
 
-  const [dataType, setDataType] = useState<"percentage" | "absolute">(
-    "absolute"
+  const [dataType, setDataType] = useState<"log" | "percentage" | "absolute">(
+    "log"
   );
   const [absoluteMode, setAbsoluteMode] = useState<
     "normalized" | "unnormalized"
@@ -155,23 +155,16 @@ const PerformanceChart = () => {
     getLiveChartModels();
   }, []);
 
+  // Normalizes a series so the first value is 1
+  const normalizeSeries = (arr: number[]) => {
+    if (!arr.length) return [];
+    const first = arr[0] === 0 ? 1 : arr[0];
+    return arr.map((v) => v / first);
+  };
+
+  // For legacy code compatibility
   const normalize = (data: ChartData): number[] => {
-    const modelValues = data?.model ? data?.model[0] : [];
-    if (!modelValues.length) return [];
-
-    const allSpyVooValues = [...data.spy, ...data.voo];
-    const minValue = Math.min(...allSpyVooValues);
-    const maxValue = Math.max(...allSpyVooValues);
-
-    const modelMin = Math.min(...modelValues);
-    const modelMax = Math.max(...modelValues);
-
-    return modelValues.map((value) => {
-      return (
-        ((value - modelMin) / (modelMax - modelMin)) * (maxValue - minValue) +
-        minValue
-      );
-    });
+    return normalizeSeries(data?.model ? data.model[0] : []);
   };
 
   // Enhanced function to calculate Y-axis domain with custom scaling
@@ -180,18 +173,20 @@ const PerformanceChart = () => {
 
     const allValues: number[] = [];
     data.forEach((item) => {
-      if (typeof item.SPY === "number") allValues.push(item.SPY);
-      if (typeof item.VOO === "number") allValues.push(item.VOO);
-      if (typeof item.Model === "number") allValues.push(item.Model);
+      if (typeof item.SPY === "number" && isFinite(item.SPY)) allValues.push(item.SPY);
+      if (typeof item.VOO === "number" && isFinite(item.VOO)) allValues.push(item.VOO);
+      if (typeof item.Model === "number" && isFinite(item.Model)) allValues.push(item.Model);
     });
 
-    if (allValues.length === 0) return ["auto", "auto"];
+    // For log mode, filter out non-positive values
+    const positiveValues = allValues.filter((v) => v > 0);
+    if (allValues.length === 0 || positiveValues.length === 0) return ["auto", "auto"];
 
-    const minValue = Math.min(...allValues);
-    const maxValue = Math.max(...allValues);
+    const minValue = Math.min(...positiveValues);
+    const maxValue = Math.max(...positiveValues);
 
-    // Apply the requested scaling: min * 0.95 to max * 1.05
-    const scaledMin = minValue * 0.95;
+    // For log mode, set min to a small positive value if needed
+    const scaledMin = minValue * 0.95 > 0 ? minValue * 0.95 : 1e-6;
     const scaledMax = maxValue * 1.05;
 
     return [scaledMin, scaledMax];
@@ -237,6 +232,7 @@ const PerformanceChart = () => {
     if (!data) return [];
     const modelValues = data?.model ? data?.model[0] : [];
     const isPercentage = dataType === "percentage";
+    const isLog = dataType === "log";
 
     // Get the correct normalized data based on chart type
     const normalizedData =
@@ -244,18 +240,43 @@ const PerformanceChart = () => {
         ? simulatedNormalizedModelData
         : realNormalizedModelData;
 
+    // For log mode, normalize all series to start from the same point before applying log10
+    let spyArr = data.spy;
+    let vooArr = data.voo;
+    let modelArr = modelValues;
+    if (dataType === "absolute" && absoluteMode === "normalized") {
+      spyArr = normalizeSeries(data.spy);
+      vooArr = normalizeSeries(data.voo);
+      modelArr = normalizeSeries(modelValues);
+    } else if (isLog) {
+      // Normalize all series to start from 1, then apply log10
+      spyArr = normalizeSeries(data.spy);
+      vooArr = normalizeSeries(data.voo);
+      modelArr = normalizeSeries(modelValues);
+    }
+
     const processedData = data.dates.map((date, index) => ({
       date,
       SPY: isPercentage
         ? (data.spy[index] / data.spy[0] - 1) * 100
+        : isLog
+        ? Math.log10(spyArr[index] > 0 ? spyArr[index] : 1e-6)
+        : dataType === "absolute" && absoluteMode === "normalized"
+        ? spyArr[index]
         : data.spy[index],
       VOO: isPercentage
         ? (data.voo[index] / data.voo[0] - 1) * 100
+        : isLog
+        ? Math.log10(vooArr[index] > 0 ? vooArr[index] : 1e-6)
+        : dataType === "absolute" && absoluteMode === "normalized"
+        ? vooArr[index]
         : data.voo[index],
       Model: isPercentage
         ? (modelValues[index] / modelValues[0] - 1) * 100
-        : absoluteMode === "normalized"
-        ? normalizedData[index]
+        : isLog
+        ? Math.log10(modelArr[index] > 0 ? modelArr[index] : 1e-6)
+        : dataType === "absolute" && absoluteMode === "normalized"
+        ? modelArr[index]
         : modelValues[index],
     }));
 
@@ -596,7 +617,7 @@ const PerformanceChart = () => {
         >
           {!isSimulated && <div className="w-full"></div>}
           <h1 className="text-center font-extrabold text-gray-900 dark:text-white text-3xl md:text-5xl lg:text-6xl w-full">
-            <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
               {isSimulated
                 ? theme.strings.simulatedPerformance
                 : theme.strings.realPerformance}
@@ -724,16 +745,18 @@ const PerformanceChart = () => {
               />
               {/* Enhanced Y-axis with larger width and custom domain */}
               <YAxis
-                domain={yAxisDomain}
+                scale={dataType === "log" ? "log" : "linear"}
                 tickFormatter={(tick) =>
                   dataType === "percentage"
                     ? `${tick.toFixed(0)}%`
                     : tick.toFixed(2)
                 }
-                width={80} // Increased from 80 to 120 for larger Y-axis
+                width={80}
                 height={120}
                 tick={{ fill: "#666", fontSize: 12 }}
-                tickCount={200} // More tick marks for better granularity
+                tickCount={200}
+                allowDataOverflow={dataType === "log"}
+                domain={yAxisDomain}
               />
               <Tooltip
                 contentStyle={{
@@ -744,9 +767,20 @@ const PerformanceChart = () => {
                 }}
               />
               <Legend
-                wrapperStyle={{ paddingTop: 20 }}
+                wrapperStyle={{ paddingTop: 20, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' }}
+                iconSize={24}
+                align={"center"}
                 formatter={(value) => (
-                  <span style={{ color: "#666" }}>{value}</span>
+                  <span style={{
+                    color: "#666",
+                    fontSize: "22px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: 24,
+                    gap: 8,
+                  }}>
+                    {value}
+                  </span>
                 )}
               />
               <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
@@ -839,8 +873,7 @@ const PerformanceChart = () => {
 
   return (
     <>
-      <PerformanceSummary modelData={simulatedModelData} dataType={dataType} />
-      <PerformanceTable />
+  <PerformanceSummary modelData={simulatedModelData} dataType={dataType === "log" ? "absolute" : dataType} />
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -905,10 +938,11 @@ const PerformanceChart = () => {
                 <Select
                   value={dataType}
                   onChange={(e) =>
-                    setDataType(e.target.value as "percentage" | "absolute")
+                    setDataType(e.target.value as "log" | "percentage" | "absolute")
                   }
                   label="Data Type"
                 >
+                  <MenuItem value="log">Log (Normalized)</MenuItem>
                   <MenuItem value="percentage">Percentage</MenuItem>
                   <MenuItem value="absolute">Absolute</MenuItem>
                 </Select>
@@ -954,6 +988,7 @@ const PerformanceChart = () => {
           </Grid>
         </Grid>
       </Box>
+      <PerformanceTable />
     </>
   );
 };

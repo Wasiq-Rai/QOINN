@@ -14,8 +14,7 @@ import { UserManagementModal } from "./UserManagementModal";
 import { useTheme } from "@/context/ThemeContext";
 
 export const SiteMetricsDashboard = () => {
-  const { user, isLoaded } = useUser();
-  const { isAdmin, isLoading } = useAdmin();
+  const { isAdmin } = useAdmin();
   const [allUsers, setAllUsers]= useState<User[]>([]);
   const { theme } = useTheme();
   const [metrics, setSiteMetrics] = useState<SiteMetrics>({
@@ -25,32 +24,31 @@ export const SiteMetricsDashboard = () => {
   });
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const fetchMetrics = async () => {
     try {
+      setError("");
       const investment = await getMetrics();
       const users = await getTotalUsers();
-      setAllUsers(users)
-      // const logins = await getTotalLogins();
-
+      setAllUsers(users);
       setSiteMetrics({
-        total_visitors: metrics.total_visitors || 1, // Keep existing value
-        total_logins: users.length, // Set total_logins from users API response
-        total_investments: investment.data.total_investments.toString(), // Set total_investments from investment API response
+        total_visitors: investment.data.total_visitors || 0,
+        total_logins: users.length,
+        total_investments: investment.data.total_investments.toString(),
       });
-    } catch (error) {
-      console.error("Error fetching metrics:", error);
+    } catch (err) {
+      setError("Failed to fetch site metrics. Please try again later.");
+      console.error("Error fetching metrics:", err);
     }
   };
 
   useEffect(() => {
-    if (isLoaded && user) {
       fetchMetrics();
       // Set up interval for real-time updates
       const interval = setInterval(fetchMetrics, 30000); // Update every 30 seconds
       return () => clearInterval(interval);
-    }
-  }, [isLoaded, user]);
+  }, []);
 
   const handleInvestmentUpdate = async (amount: number) => {
     if (amount && amount > 0) {
@@ -67,10 +65,6 @@ export const SiteMetricsDashboard = () => {
       }
     }
   };
-
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="p-6 space-y-6">
@@ -89,75 +83,83 @@ export const SiteMetricsDashboard = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Eye className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Visitors
-                </p>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {metrics.total_visitors.toLocaleString()}
-                </h3>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {error && (
+        <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+          {error}
+        </div>
+      )}
 
-        <Card
-          className={
-            isAdmin ? "cursor-pointer transition-all hover:shadow-md" : ""
-          }
-          onClick={() => {
-            if (isAdmin) {
-              setIsUserModalOpen(true);
+      {!error && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Eye className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Visitors
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {metrics.total_visitors.toLocaleString()}
+                  </h3>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className={
+              isAdmin ? "cursor-pointer transition-all hover:shadow-md" : ""
             }
-          }}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <LogIn className="w-6 h-6 text-green-600" />
+            onClick={() => {
+              if (isAdmin) {
+                setIsUserModalOpen(true);
+              }
+            }}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <LogIn className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Users
+                    {isAdmin && (
+                      <span className="ml-2 text-xs text-blue-600">
+                        (Click to manage)
+                      </span>
+                    )}
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {metrics.total_logins.toLocaleString()}
+                  </h3>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Users
-                  {isAdmin && (
-                    <span className="ml-2 text-xs text-blue-600">
-                      (Click to manage)
-                    </span>
-                  )}
-                </p>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {metrics.total_logins.toLocaleString()}
-                </h3>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-purple-600" />
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Investments
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    ${metrics.total_investments}
+                  </h3>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Investments
-                </p>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  ${metrics.total_investments}
-                </h3>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <AdminMetricsManager
         isOpen={isUpdateModalOpen}

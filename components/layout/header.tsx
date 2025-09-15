@@ -23,7 +23,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-[#c2d6df]">
       <div className="flex h-16 items-center justify-between pl-2 pr-6">
         {/* Logo */}
-        <Link className="flex items-center space-x-2" href="/">
+        <Link className="flex flex-1 items-center space-x-2" href="/">
           <Image
             src="/img/logo/logo.png"
             alt="QOINN Logo"
@@ -41,7 +41,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-6 text-[19px] font-medium text-gray-700 dark:text-gray-300">
+        <nav className="hidden md:flex md:flex-1 items-center space-x-6 text-[19px] font-medium text-gray-700 dark:text-gray-300">
           <Link href="/#features" className="hover:text-blue-600 transition-colors">
             Features
           </Link>
@@ -51,9 +51,9 @@ export function Header() {
           <Link href="/invest" className="hover:text-blue-600 transition-colors">
             Investments
           </Link>
-          <Link href="/#subscribe" className="hover:text-blue-600 transition-colors">
+          {/* <Link href="/#subscribe" className="hover:text-blue-600 transition-colors">
             Subscribe
-          </Link>
+          </Link> */}
           <Link href="/#team" className="hover:text-blue-600 transition-colors">
             Team
           </Link>
@@ -65,7 +65,7 @@ export function Header() {
         </nav>
 
         {/* Auth Buttons - Desktop */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex md:flex-1 justify-end items-center space-x-4">
           <SignedOut>
             <SignInButton />
           </SignedOut>
@@ -101,9 +101,9 @@ export function Header() {
             <Link href="/invest" onClick={() => setMenuOpen(false)}>
               Investments
             </Link>
-            <Link href="/#subscribe" onClick={() => setMenuOpen(false)}>
+            {/* <Link href="/#subscribe" onClick={() => setMenuOpen(false)}>
               Subscribe
-            </Link>
+            </Link> */}
             <Link href="/#team" onClick={() => setMenuOpen(false)}>
               Team
             </Link>

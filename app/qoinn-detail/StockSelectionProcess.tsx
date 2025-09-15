@@ -84,7 +84,7 @@ const StockSelectionProcess = () => {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-[28px] font-bold">
           {theme.strings.stockSelectionProcess}
         </h1>
       </div>

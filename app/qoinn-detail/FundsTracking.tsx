@@ -98,7 +98,17 @@ const StockChart: React.FC<{
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={animated ? animatedData : data}>
         {showAxes && <CartesianGrid strokeDasharray="3 3" />}
-        {showAxes && <XAxis dataKey="time" />}
+        {showAxes && (
+          <XAxis
+            dataKey="time"
+            angle={-35}
+            textAnchor="end"
+            interval={Math.ceil((animated ? animatedData.length : data.length) / 8)}
+            minTickGap={10}
+            height={50}
+            fontSize={12}
+          />
+        )}
         {showAxes && <YAxis domain={["auto", "auto"]} />}
         <Tooltip content={<CustomTooltip />} />
         <Line
@@ -203,7 +213,7 @@ const IndexFundTracking = () => {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-[28px] font-bold">
           {theme.strings.indexFundTracking}
         </h1>
       </div>
@@ -221,7 +231,7 @@ const IndexFundTracking = () => {
           src="/img/charts/index-fund-tracking.png"
           alt="Index Funds Tracking"
           style={{
-            width: "1000px",
+            width: "900px",
             height: "100%",
           }}
         />

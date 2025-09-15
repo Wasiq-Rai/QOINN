@@ -44,16 +44,16 @@ const metrics = [
 
 export default function PerformanceTable() {
   const { isAdmin } = useAdmin();
-  const { user } = useUser();
-  
   const [data, setData] = useState<PerformanceData>({});
   const [editedData, setEditedData] = useState<EditedPerformanceData>({});
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 2020 + 1 }, (_, i) => 2020 + i).reverse();
+  const years = Array.from({ length: currentYear - 2016 + 1 }, (_, i) => 2016 + i).reverse();
+  const visibleYears = showAll ? years : years.slice(0, 5);
 
   // Load data from API
   useEffect(() => {
@@ -151,9 +151,9 @@ export default function PerformanceTable() {
       <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+            <span className="font-kigelia text-transparent text-[34px] bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
             Performance Analytics
-          </h1>
+          </span>
           <p className="text-gray-600 text-lg">Comprehensive investment performance comparison</p>
         </div>
 
@@ -176,13 +176,13 @@ export default function PerformanceTable() {
                 {/* Header Cell */}
                 <div className="h-20 border-b border-gray-200 flex items-center justify-center px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                   <div className="text-center">
-                    <div className="text-sm font-semibold text-gray-600 mb-1">Performance</div>
-                    <div className="text-xs text-gray-500">Metrics</div>
+                    <div className="text-[16px] font-semibold text-gray-600 mb-1">Performance</div>
+                    <div className="text-[16px] text-gray-500">Metrics</div>
                   </div>
                 </div>
                 
                 {/* Year Rows */}
-                {years.map((year, index) => (
+                {visibleYears.map((year, index) => (
                   <div key={year} className="border-b border-gray-200 last:border-b-0">
                     <div 
                       className="h-24 flex items-center justify-between px-6 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 group"
@@ -198,11 +198,11 @@ export default function PerformanceTable() {
                       <div className="ml-6 space-y-1">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg"></div>
-                          <span className="text-xs font-semibold text-blue-600 tracking-wide">QOINN</span>
+                          <span className="text-[17px] font-semibold text-blue-600 tracking-wide">QOINN</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg"></div>
-                          <span className="text-xs font-semibold text-emerald-600 tracking-wide">VOO</span>
+                          <span className="text-[17px] font-semibold text-emerald-600 tracking-wide">VOO</span>
                         </div>
                       </div>
                     </div>
@@ -224,7 +224,7 @@ export default function PerformanceTable() {
                         }}
                       >
                         <div className="text-center">
-                          <div className="text-sm font-semibold text-gray-700 mb-1 leading-tight">
+                          <div className="text-[16px] font-semibold text-gray-700 mb-1 leading-tight">
                             {metric.label}
                           </div>
                           <div className="w-8 h-0.5 bg-gradient-to-r from-blue-500 to-emerald-500 mx-auto rounded-full"></div>
@@ -234,7 +234,7 @@ export default function PerformanceTable() {
                   </div>
 
                   {/* Data Rows */}
-                  {years.map((year, yearIndex) => (
+                  {visibleYears.map((year, yearIndex) => (
                     <div key={year} className="flex border-b border-gray-200 last:border-b-0 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-emerald-50/30 transition-all duration-300">
                       {metrics.map((metric, metricIndex) => {
                         const cell = data[year]?.[metric.key] || { qoinn_value: '0', voo_value: '0' };
@@ -261,11 +261,11 @@ export default function PerformanceTable() {
                                   type="text"
                                   value={qoinnVal}
                                   onChange={(e) => handleChange(year, metric.key, 'qoinn_value', e.target.value)}
-                                  className="w-full text-center text-sm font-semibold text-blue-700 bg-transparent border-0 outline-0 focus:bg-white/50 rounded px-2 py-1 transition-all duration-300"
+                                  className="w-full text-center text-[16px] font-semibold text-blue-700 bg-transparent border-0 outline-0 focus:bg-white/50 rounded px-2 py-1 transition-all duration-300"
                                   placeholder="0"
                                 />
                               ) : (
-                                <span className={`text-sm font-semibold text-blue-700 transition-all duration-300 ${
+                                <span className={`text-[16px] font-semibold text-blue-700 transition-all duration-300 ${
                                   hoveredCell === `${year}-${metric.key}-qoinn` ? 'scale-110 text-blue-800' : ''
                                 }`}>
                                   {qoinnVal}
@@ -284,11 +284,11 @@ export default function PerformanceTable() {
                                   type="text"
                                   value={vooVal}
                                   onChange={(e) => handleChange(year, metric.key, 'voo_value', e.target.value)}
-                                  className="w-full text-center text-sm font-semibold text-emerald-700 bg-transparent border-0 outline-0 focus:bg-white/50 rounded px-2 py-1 transition-all duration-300"
+                                  className="w-full text-center text-[16px] font-semibold text-emerald-700 bg-transparent border-0 outline-0 focus:bg-white/50 rounded px-2 py-1 transition-all duration-300"
                                   placeholder="0"
                                 />
                               ) : (
-                                <span className={`text-sm font-semibold text-emerald-700 transition-all duration-300 ${
+                                <span className={`text-[16px] font-semibold text-emerald-700 transition-all duration-300 ${
                                   hoveredCell === `${year}-${metric.key}-voo` ? 'scale-110 text-emerald-800' : ''
                                 }`}>
                                   {vooVal}
@@ -332,6 +332,29 @@ export default function PerformanceTable() {
                   </span>
                   {!saving && (
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Show More/Less Button */}
+            {years.length > 5 && (
+              <div className="flex justify-center mt-2">
+                <button
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
+                  aria-label={showAll ? 'Show less' : 'Show more'}
+                >
+                  {showAll ? (
+                    <>
+                      <span className="mr-2">Show less</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 15l-7-7-7 7" /></svg>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">Show more</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 9l7 7 7-7" /></svg>
+                    </>
                   )}
                 </button>
               </div>

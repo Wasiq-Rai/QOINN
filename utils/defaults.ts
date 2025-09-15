@@ -17,7 +17,7 @@ export const defaultTheme: ThemeContent = {
     howDoesQoinnWork: "How does QOINN work?",
     howDoesQoinnWorkDescription:
       "Intelligent investment strategy combining index tracking with momentum optimization",
-    indexFundTracking: "Index Fund Tracking",
+    indexFundTracking: "Traditional Index Funds",
     indexFundTrackingDescription:
       "An index assigns weights to stocks based on factors like market capitalization, stock price, or equal weighting. Index funds then distribute investments proportionally to these weights, ensuring the fund’s performance closely tracks the index. However, not all funds are in a good period with upward trends and momentum like the red ones down.",
     stockSelectionProcess: "Stock Selection Process",
