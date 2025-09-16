@@ -51,9 +51,9 @@ export function Header() {
           <Link href="/invest" className="hover:text-blue-600 transition-colors">
             Investments
           </Link>
-          {/* <Link href="/#subscribe" className="hover:text-blue-600 transition-colors">
+          <Link href="/invest" className="hover:text-blue-600 transition-colors">
             Subscribe
-          </Link> */}
+          </Link>
           <Link href="/#team" className="hover:text-blue-600 transition-colors">
             Team
           </Link>
@@ -101,9 +101,9 @@ export function Header() {
             <Link href="/invest" onClick={() => setMenuOpen(false)}>
               Investments
             </Link>
-            {/* <Link href="/#subscribe" onClick={() => setMenuOpen(false)}>
+            <Link href="/invest" onClick={() => setMenuOpen(false)}>
               Subscribe
-            </Link> */}
+            </Link>
             <Link href="/#team" onClick={() => setMenuOpen(false)}>
               Team
             </Link>

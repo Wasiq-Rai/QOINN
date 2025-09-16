@@ -155,11 +155,12 @@ const PerformanceChart = () => {
     getLiveChartModels();
   }, []);
 
-  // Normalizes a series so the first value is 1
-  const normalizeSeries = (arr: number[]) => {
+
+  // Normalizes a series so the first value is 1 (default) or a custom value
+  const normalizeSeries = (arr: number[], initial: number = 1) => {
     if (!arr.length) return [];
     const first = arr[0] === 0 ? 1 : arr[0];
-    return arr.map((v) => v / first);
+    return arr.map((v) => (v / first) * initial);
   };
 
   // For legacy code compatibility
@@ -168,7 +169,8 @@ const PerformanceChart = () => {
   };
 
   // Enhanced function to calculate Y-axis domain with custom scaling
-  const calculateYAxisDomain = (data: any[]) => {
+  // Always returns [number, number] for log mode shared domain
+  const calculateYAxisDomain = (data: any[]): [number, number] | ["auto", "auto"] => {
     if (!data || data.length === 0) return ["auto", "auto"];
 
     const allValues: number[] = [];
@@ -180,7 +182,7 @@ const PerformanceChart = () => {
 
     // For log mode, filter out non-positive values
     const positiveValues = allValues.filter((v) => v > 0);
-    if (allValues.length === 0 || positiveValues.length === 0) return ["auto", "auto"];
+    if (allValues.length === 0 || positiveValues.length === 0) return [1e-6, 1];
 
     const minValue = Math.min(...positiveValues);
     const maxValue = Math.max(...positiveValues);
@@ -234,13 +236,7 @@ const PerformanceChart = () => {
     const isPercentage = dataType === "percentage";
     const isLog = dataType === "log";
 
-    // Get the correct normalized data based on chart type
-    const normalizedData =
-      chartType === "simulated"
-        ? simulatedNormalizedModelData
-        : realNormalizedModelData;
-
-    // For log mode, normalize all series to start from the same point before applying log10
+    // For log mode, normalize all series to start from 10, then apply log10
     let spyArr = data.spy;
     let vooArr = data.voo;
     let modelArr = modelValues;
@@ -249,10 +245,9 @@ const PerformanceChart = () => {
       vooArr = normalizeSeries(data.voo);
       modelArr = normalizeSeries(modelValues);
     } else if (isLog) {
-      // Normalize all series to start from 1, then apply log10
-      spyArr = normalizeSeries(data.spy);
-      vooArr = normalizeSeries(data.voo);
-      modelArr = normalizeSeries(modelValues);
+      spyArr = normalizeSeries(data.spy, 10);
+      vooArr = normalizeSeries(data.voo, 10);
+      modelArr = normalizeSeries(modelValues, 10);
     }
 
     const processedData = data.dates.map((date, index) => ({
@@ -585,6 +580,23 @@ const PerformanceChart = () => {
     updateChartData("real");
   }, [absoluteMode]);
 
+  // Shared Y-axis domain for log mode
+  const [sharedLogDomain, setSharedLogDomain] = useState<[number, number]>([1e-6, 1]);
+
+  useEffect(() => {
+    if (dataType === "log" && simulatedData && filteredData) {
+      const simProcessed = processChartData(simulatedData, "simulated");
+      const realProcessed = processChartData(filteredData, "real");
+      const all = [...simProcessed, ...realProcessed];
+      const domain = calculateYAxisDomain(all);
+      if (Array.isArray(domain) && typeof domain[0] === 'number' && typeof domain[1] === 'number') {
+        setSharedLogDomain(domain as [number, number]);
+      } else {
+        setSharedLogDomain([1e-6, 1]);
+      }
+    }
+  }, [dataType, simulatedData, filteredData]);
+
   // Render function modified to handle both charts with enhanced Y-axis
   const renderPerformanceChart = (
     chartData: ChartData,
@@ -594,7 +606,8 @@ const PerformanceChart = () => {
   ) => {
     const processedData = processChartData(chartData, chartType);
     const isSimulated = chartType === "simulated";
-    const yAxisDomain = calculateYAxisDomain(processedData);
+    // Use shared domain for log mode, otherwise calculate per chart
+    const yAxisDomain = dataType === "log" ? sharedLogDomain : calculateYAxisDomain(processedData);
 
     return (
       <Paper
