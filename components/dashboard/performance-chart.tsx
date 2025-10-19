@@ -28,9 +28,6 @@ import {
   TextField,
 } from "@mui/material";
 import {
-  Edit as EditIcon,
-  UploadFile as UploadIcon,
-  Refresh as RefreshIcon,
   Fullscreen,
   Download,
 } from "@mui/icons-material";
@@ -42,7 +39,6 @@ import {
   TIMELINE_CONFIGS,
 } from "@/utils/api";
 import { ChartData } from "@/utils/types";
-import FileUploadButton from "../ui/file-upload-button";
 import PerformanceSummary from "./performance-summary";
 import { useAdmin } from "@/context/AdminContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -79,11 +75,8 @@ const PerformanceChart = () => {
   const [activeModel, setActiveModel] = useState<string>(
     liveModels[0] || "M21"
   );
+  const [hasInitializedActiveModel, setHasInitializedActiveModel] = useState(false);
   const [activeTimeline, setActiveTimeline] = useState("2y");
-
-  // Separate edit modes
-  const [simulatedEditMode, setSimulatedEditMode] = useState(false);
-  const [realEditMode, setRealEditMode] = useState(false);
 
   // Separate model data for each chart
   const [simulatedModelData, setSimulatedModelData] = useState<number[]>([]);
@@ -127,7 +120,7 @@ const PerformanceChart = () => {
       dates: data.dates.slice(dateIndex),
       spy: data.spy.slice(dateIndex),
       voo: data.voo.slice(dateIndex),
-      model: [data.model[0].slice(dateIndex)],
+      model: data.model.slice(dateIndex),
     };
   };
 
@@ -145,6 +138,16 @@ const PerformanceChart = () => {
         const liveModels = await getLiveModels();
         if (liveModels && liveModels.selected_modals.length > 0) {
           setLiveModels(liveModels.selected_modals);
+
+          // Initialize activeModel from backend on first load
+          if (!hasInitializedActiveModel) {
+            if (liveModels.active_modal && liveModels.selected_modals.includes(liveModels.active_modal)) {
+              setActiveModel(liveModels.active_modal);
+            } else {
+              setActiveModel(liveModels.selected_modals[0]);
+            }
+            setHasInitializedActiveModel(true);
+          }
         } else {
           setLiveModels([]);
         }
@@ -165,7 +168,7 @@ const PerformanceChart = () => {
 
   // For legacy code compatibility
   const normalize = (data: ChartData): number[] => {
-    return normalizeSeries(data?.model ? data.model[0] : []);
+    return normalizeSeries(data?.model ? data.model : []);
   };
 
   // Enhanced function to calculate Y-axis domain with custom scaling
@@ -202,21 +205,29 @@ const PerformanceChart = () => {
         model,
         timeline
       );
+      console.log("SImulated:", simulatedResponse)
+      console.log("Real", realResponse)
+      // Normalize shapes: backend may return model as nested array [ [ ... ] ]
+      const simModelRaw = simulatedResponse.data.model;
+      const simModel = Array.isArray(simModelRaw) && Array.isArray(simModelRaw[0]) ? simModelRaw[0] : simModelRaw || [];
+      const simNormalizedRaw = simulatedResponse.data.normalized_model;
+      const simNormalized = Array.isArray(simNormalizedRaw) && Array.isArray(simNormalizedRaw[0]) ? simNormalizedRaw[0] : simNormalizedRaw;
 
       // Process simulated data
-      setSimulatedData(simulatedResponse.data);
-      setSimulatedModelData(simulatedResponse.data.model[0]);
-      setSimulatedNormalizedModelData(
-        simulatedResponse.data.normalized_model?.[0] ||
-          normalize(simulatedResponse.data)
-      );
+      setSimulatedData({ ...simulatedResponse.data, model: simModel, normalized_model: simNormalized });
+      setSimulatedModelData(simModel);
+      setSimulatedNormalizedModelData(simNormalized || normalize({ ...simulatedResponse.data, model: simModel }));
+
+      // Normalize shapes for real data as well
+      const realModelRaw = realResponse.data.model;
+      const realModel = Array.isArray(realModelRaw) && Array.isArray(realModelRaw[0]) ? realModelRaw[0] : realModelRaw || [];
+      const realNormalizedRaw = realResponse.data.normalized_model;
+      const realNormalized = Array.isArray(realNormalizedRaw) && Array.isArray(realNormalizedRaw[0]) ? realNormalizedRaw[0] : realNormalizedRaw;
 
       // Process real data
-      setRealData(realResponse.data);
-      setRealModelData(realResponse.data.model[0]);
-      setRealNormalizedModelData(
-        realResponse.data.normalized_model?.[0] || normalize(realResponse.data)
-      );
+      setRealData({ ...realResponse.data, model: realModel, normalized_model: realNormalized });
+      setRealModelData(realModel);
+      setRealNormalizedModelData(realNormalized || normalize({ ...realResponse.data, model: realModel }));
     } catch (error) {
       console.error("Error fetching performance data:", error);
     }
@@ -232,7 +243,7 @@ const PerformanceChart = () => {
     chartType: "simulated" | "real"
   ) => {
     if (!data) return [];
-    const modelValues = data?.model ? data?.model[0] : [];
+    const modelValues = data?.model || [];
     const isPercentage = dataType === "percentage";
     const isLog = dataType === "log";
 
@@ -339,193 +350,85 @@ const PerformanceChart = () => {
     }
   };
 
-  // Update both simulated handlers
-  const handleSimulatedDataEdit = async (index: number, value: string) => {
-    const newData = [...simulatedModelData];
-    newData[index] = Number(value);
-    setSimulatedModelData(newData);
-
-    if (simulatedData) {
-      const updatedChartData = {
-        ...simulatedData,
-        model: [newData],
-      };
-      setSimulatedData(updatedChartData);
-      await saveDataToBackend(
-        "simulated",
-        simulatedData.dates,
-        newData,
-        simulatedNormalizedModelData
-      );
-    }
-  };
-
-  const handleSimulatedNormalizedDataEdit = async (
-    index: number,
-    value: string
-  ) => {
-    const newData = [...simulatedNormalizedModelData];
-    newData[index] = Number(value);
-    setSimulatedNormalizedModelData(newData);
-
-    if (simulatedData) {
-      const updatedChartData = {
-        ...simulatedData,
-        model: [newData],
-      };
-      setSimulatedData(updatedChartData);
-      await saveDataToBackend(
-        "simulated",
-        simulatedData.dates,
-        simulatedModelData,
-        newData
-      );
-    }
-  };
-
-  // Update both real handlers similarly
-  const handleRealDataEdit = async (index: number, value: string) => {
-    const newData = [...realModelData];
-    newData[index] = Number(value);
-    setRealModelData(newData);
-
-    if (realData) {
-      const updatedChartData = {
-        ...realData,
-        model: [newData],
-      };
-      setRealData(updatedChartData);
-      await saveDataToBackend(
-        "real",
-        realData.dates,
-        newData,
-        realNormalizedModelData
-      );
-    }
-  };
-
-  const handleRealNormalizedDataEdit = async (index: number, value: string) => {
-    const newData = [...realNormalizedModelData];
-    newData[index] = Number(value);
-    setRealNormalizedModelData(newData);
-
-    if (realData) {
-      const updatedChartData = {
-        ...realData,
-        model: [newData],
-      };
-      setRealData(updatedChartData);
-      await saveDataToBackend("real", realData.dates, realModelData, newData);
-    }
-  };
-
-  const parseUploadedFile = (content: string): number[] => {
-    // Remove all whitespace and brackets
-    let cleaned = content.replace(/[\[\]]/g, "").trim();
-
-    // Split by any whitespace or comma
-    const values = cleaned.split(/[\s,]+/).filter((val) => val.trim() !== "");
-
-    // Convert to numbers and filter out invalid entries
-    return values.map((val) => parseFloat(val)).filter((val) => !isNaN(val));
-  };
-
-  const handleSimulatedFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const content = await file.text();
-      const uploadedData = parseUploadedFile(content);
-
-      const config = Object.values(ENHANCED_TIMELINE_CONFIGS).find(
-        (cfg) => cfg.expectedLength === uploadedData.length
-      );
-
-      if (!config) {
-        alert("Uploaded data must match a predefined timeline length.");
-        return;
-      }
-
-      // Update local state
-      setSimulatedModelData(uploadedData);
-
+  // Keep normalized simulated data in sync whenever absolute simulatedModelData changes
+  useEffect(() => {
+    if (simulatedModelData && simulatedModelData.length > 0) {
+      const normalized = normalizeSeries(simulatedModelData);
+      setSimulatedNormalizedModelData(normalized);
+      // also reflect in simulatedData.model if needed
       if (simulatedData) {
-        const updatedChartData = {
-          ...simulatedData,
-          model: [uploadedData],
-        };
-        setSimulatedData(updatedChartData);
-
-        // Save to backend
-        if (isAdmin) {
-          await saveDataToBackend(
-            "simulated",
-            simulatedData.dates,
-            uploadedData,
-            normalize({ ...simulatedData, model: [uploadedData] })
-          );
-        }
+        setSimulatedData({ ...simulatedData, model: simulatedModelData });
       }
-    } catch (error) {
-      console.error("Error processing uploaded file:", error);
-      alert("Error processing file. Please check the format.");
-    } finally {
-      // Reset the input to allow re-uploading the same file
-      event.target.value = "";
+    }
+  }, [simulatedModelData]);
+
+  // Add a new day to simulated data (append date and default value)
+  const addSimulatedDay = async () => {
+    // determine next date
+    const lastDateStr = simulatedData?.dates?.[simulatedData.dates.length - 1];
+    const lastDate = lastDateStr ? new Date(lastDateStr) : new Date();
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const isoDate = nextDate.toISOString().split("T")[0];
+
+    // default value: copy last absolute value or 0
+    const lastVal = simulatedModelData.length ? simulatedModelData[simulatedModelData.length - 1] : 0;
+    const newVal = lastVal || 0;
+
+    const newModel = [...simulatedModelData, newVal];
+    const newDates = simulatedData?.dates ? [...simulatedData.dates, isoDate] : [isoDate];
+
+    setSimulatedModelData(newModel);
+    if (simulatedData) {
+      setSimulatedData({ ...simulatedData, model: newModel, dates: newDates });
+    }
+
+    const newNormalized = normalizeSeries(newModel);
+    setSimulatedNormalizedModelData(newNormalized);
+
+    // persist to backend
+    if (isAdmin && simulatedData) {
+      await saveDataToBackend("simulated", newDates, newModel, newNormalized);
     }
   };
 
-  // Create similar handler for real data upload
-  const handleRealFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Add a new day to real data (append date and default value)
+  const addRealDay = async () => {
+    const lastDateStr = realData?.dates?.[realData.dates.length - 1];
+    const lastDate = lastDateStr ? new Date(lastDateStr) : new Date();
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const isoDate = nextDate.toISOString().split("T")[0];
 
-    try {
-      const content = await file.text();
-      const uploadedData = parseUploadedFile(content);
+    const lastVal = realModelData.length ? realModelData[realModelData.length - 1] : 0;
+    const newVal = lastVal || 0;
 
-      const config = Object.values(ENHANCED_TIMELINE_CONFIGS).find(
-        (cfg) => cfg.expectedLength === uploadedData.length
-      );
+    const newModel = [...realModelData, newVal];
+    const newDates = realData?.dates ? [...realData.dates, isoDate] : [isoDate];
 
-      if (!config) {
-        alert("Uploaded data must match a predefined timeline length.");
-        return;
-      }
+    setRealModelData(newModel);
+    if (realData) {
+      setRealData({ ...realData, model: newModel, dates: newDates });
+    }
 
-      // Update local state
-      setRealModelData(uploadedData);
+    const newNormalized = normalizeSeries(newModel);
+    setRealNormalizedModelData(newNormalized);
 
+    if (isAdmin && realData) {
+      await saveDataToBackend("real", newDates, newModel, newNormalized);
+    }
+  };
+
+  // Keep normalized real data in sync whenever realModelData changes
+  useEffect(() => {
+    if (realModelData && realModelData.length > 0) {
+      const normalized = normalizeSeries(realModelData);
+      setRealNormalizedModelData(normalized);
       if (realData) {
-        const updatedChartData = {
-          ...realData,
-          model: [uploadedData],
-        };
-        setRealData(updatedChartData);
-
-        // Save to backend
-        if (isAdmin) {
-          await saveDataToBackend(
-            "real",
-            realData.dates,
-            uploadedData,
-            normalize({ ...realData, model: [uploadedData] })
-          );
-        }
+        setRealData({ ...realData, model: realModelData });
       }
-    } catch (error) {
-      console.error("Error processing uploaded file:", error);
-      alert("Error processing file. Please check the format.");
-    } finally {
-      // Reset the input to allow re-uploading the same file
-      event.target.value = "";
     }
-  };
+  }, [realModelData]);
 
   useEffect(() => {
     const updateChartData = (chartType: "simulated" | "real") => {
@@ -536,7 +439,7 @@ const PerformanceChart = () => {
             if (simulatedData) {
               const updatedChartData = {
                 ...simulatedData,
-                model: [newNormData],
+                model: newNormData,
               };
               setSimulatedData(updatedChartData);
             }
@@ -545,7 +448,7 @@ const PerformanceChart = () => {
             if (realData) {
               const updatedChartData = {
                 ...realData,
-                model: [newNormData],
+                model: newNormData,
               };
               setRealData(updatedChartData);
             }
@@ -557,7 +460,7 @@ const PerformanceChart = () => {
             if (simulatedData) {
               const updatedChartData = {
                 ...simulatedData,
-                model: [newData],
+                model: newData,
               };
               setSimulatedData(updatedChartData);
             }
@@ -566,7 +469,7 @@ const PerformanceChart = () => {
             if (realData) {
               const updatedChartData = {
                 ...realData,
-                model: [newData],
+                model: newData,
               };
               setRealData(updatedChartData);
             }
@@ -582,6 +485,8 @@ const PerformanceChart = () => {
 
   // Shared Y-axis domain for log mode
   const [sharedLogDomain, setSharedLogDomain] = useState<[number, number]>([1e-6, 1]);
+  // Version counter to force chart re-mount and trigger animations on key changes
+  const [chartVersion, setChartVersion] = useState(0);
 
   useEffect(() => {
     if (dataType === "log" && simulatedData && filteredData) {
@@ -596,6 +501,17 @@ const PerformanceChart = () => {
       }
     }
   }, [dataType, simulatedData, filteredData]);
+
+  // bump chartVersion to trigger re-mount (and therefore animations) when important controls change
+  useEffect(() => {
+    setChartVersion((v) => v + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeModel, activeTimeline, dataType, absoluteMode, startDate]);
+
+  // Also force remount when new fetched data arrives
+  useEffect(() => {
+    setChartVersion((v) => v + 1);
+  }, [simulatedData, realData]);
 
   // Render function modified to handle both charts with enhanced Y-axis
   const renderPerformanceChart = (
@@ -733,23 +649,12 @@ const PerformanceChart = () => {
             <IconButton onClick={() => downloadChart(chartType)}>
               <Download />
             </IconButton>
-            {isAdmin && (
-              <IconButton
-                onClick={() =>
-                  isSimulated
-                    ? setSimulatedEditMode(!simulatedEditMode)
-                    : setRealEditMode(!realEditMode)
-                }
-              >
-                <EditIcon />
-              </IconButton>
-            )}
           </Box>
         </Box>
 
         <div ref={ref}>
           <ResponsiveContainer width="100%" height={600}>
-            <LineChart data={processedData}>
+            <LineChart key={`chart-${chartVersion}`} data={processedData}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
               <XAxis
                 dataKey="date"
@@ -805,8 +710,10 @@ const PerformanceChart = () => {
                 stroke={LINE_COLORS.MODEL}
                 strokeWidth={2}
                 dot={false}
-                animationDuration={1000}
+                animationDuration={900}
                 animationEasing="ease-out"
+                isAnimationActive={true}
+                animationBegin={100}
               />
               <Line
                 type="monotone"
@@ -814,8 +721,10 @@ const PerformanceChart = () => {
                 stroke={LINE_COLORS.SPY}
                 strokeWidth={2}
                 dot={false}
-                animationDuration={1000}
+                animationDuration={900}
                 animationEasing="ease-out"
+                isAnimationActive={true}
+                animationBegin={150}
               />
               <Line
                 type="monotone"
@@ -823,63 +732,14 @@ const PerformanceChart = () => {
                 stroke={LINE_COLORS.VOO}
                 strokeWidth={2}
                 dot={false}
-                animationDuration={1000}
+                animationDuration={900}
                 animationEasing="ease-out"
+                isAnimationActive={true}
+                animationBegin={200}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
-
-        {(isSimulated ? simulatedEditMode : realEditMode) && (
-          <Box sx={{ maxHeight: 200, overflowY: "auto", mt: 2, pt: 2 }}>
-            <Grid container spacing={2}>
-              {absoluteMode === "unnormalized" &&
-                (isSimulated ? simulatedModelData : realModelData).map(
-                  (value, index) => (
-                    <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                      <TextField
-                        fullWidth
-                        label={`Day ${index + 1}`}
-                        type="number"
-                        variant="outlined"
-                        size="small"
-                        value={value}
-                        onChange={(e) =>
-                          isSimulated
-                            ? handleSimulatedDataEdit(index, e.target.value)
-                            : handleRealDataEdit(index, e.target.value)
-                        }
-                      />
-                    </Grid>
-                  )
-                )}
-              {absoluteMode === "normalized" &&
-                (isSimulated
-                  ? simulatedNormalizedModelData
-                  : realNormalizedModelData
-                ).map((value, index) => (
-                  <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                    <TextField
-                      fullWidth
-                      label={`Day ${index + 1}`}
-                      type="number"
-                      variant="outlined"
-                      size="small"
-                      value={value}
-                      onChange={(e) =>
-                        isSimulated
-                          ? handleSimulatedNormalizedDataEdit(
-                              index,
-                              e.target.value
-                            )
-                          : handleRealNormalizedDataEdit(index, e.target.value)
-                      }
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-          </Box>
-        )}
       </Paper>
     );
   };

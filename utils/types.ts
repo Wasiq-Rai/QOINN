@@ -70,7 +70,7 @@ export interface LoginResponse {
     dates: string[];
     spy: number[];
     voo: number[];
-    model: number[][];
+    model: number[];
     model_version: string;
     data_source?: string;
   }

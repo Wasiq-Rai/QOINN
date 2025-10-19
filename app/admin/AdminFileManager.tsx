@@ -19,6 +19,8 @@ export default function AdminFileManager() {
   const [selectedFolder, setSelectedFolder] = useState("");
   const [replaceConfirm, setReplaceConfirm] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [isImportingSheet, setIsImportingSheet] = useState(false);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<{ folder: string; file: string } | null>(null);
@@ -27,6 +29,7 @@ export default function AdminFileManager() {
   const [availableModals, setAvailableModals] = useState<string[]>([]);
   const [selectedModals, setSelectedModals] = useState<string[]>([]);
   const [newModal, setNewModal] = useState("");
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const fetchFiles = async () => {
     const res = await axios.get(`${API_URL}/files/`);
@@ -37,6 +40,7 @@ export default function AdminFileManager() {
     const res = await axios.get(`${API_URL}/admin/settings/`);
     setAvailableModals(res.data.available_modals || []);
     setSelectedModals(res.data.selected_modals || []);
+    setActiveModal(res.data.active_modal ?? null);
   };
 
   useEffect(() => {
@@ -44,12 +48,18 @@ export default function AdminFileManager() {
     fetchModals();
   }, []);
 
-  const saveModals = async (modals: string[], available: string[] = availableModals) => {
+  const saveModals = async (
+    modals: string[],
+    available: string[] = availableModals,
+    active: string | null = activeModal
+  ) => {
     setSelectedModals(modals);
     setAvailableModals(available);
+    setActiveModal(active);
     await axios.put(`${API_URL}/admin/settings/`, {
       selected_modals: modals,
-      available_modals: available
+      available_modals: available,
+      active_modal: active,
     });
     toast.success("Modal settings updated");
   };
@@ -104,7 +114,9 @@ export default function AdminFileManager() {
     const newSelection = selectedModals.includes(modalName)
       ? selectedModals.filter((m) => m !== modalName)
       : [...selectedModals, modalName];
-    saveModals(newSelection);
+    // If the active modal was removed, clear activeModal
+    const newActive = newSelection.includes(activeModal || "") ? activeModal : null;
+    saveModals(newSelection, availableModals, newActive);
   };
 
   const addNewModal = () => {
@@ -113,6 +125,12 @@ export default function AdminFileManager() {
     saveModals(selectedModals, updatedAvailable);
     setNewModal("");
     toast.success(`Modal "${newModal}" added`);
+  };
+
+  const setActiveModalAndSave = (modal: string | null) => {
+    // ensure active is among selected; if null or not selected, allow null
+    const activeToSave = modal && !selectedModals.includes(modal) ? null : modal;
+    saveModals(selectedModals, availableModals, activeToSave);
   };
 
   return (
@@ -212,6 +230,58 @@ export default function AdminFileManager() {
                       }
                     }}
                   />
+                  <div className="flex gap-2 mt-3">
+                    <Input
+                      placeholder="Google Sheet URL (public or shareable link)"
+                      value={sheetUrl}
+                      onChange={(e) => setSheetUrl(e.target.value)}
+                    />
+                    <Button
+                      onClick={async () => {
+                        if (!selectedFolder) {
+                          toast.error("Select a folder first");
+                          return;
+                        }
+                        if (!sheetUrl.trim()) {
+                          toast.error("Please provide a Google Sheet URL");
+                          return;
+                        }
+                        try {
+                          setIsImportingSheet(true);
+                          const res = await axios.post(`${API_URL}/admin/upload_sheet/`, {
+                            folder: selectedFolder,
+                            sheet_url: sheetUrl.trim(),
+                          });
+
+                          // Clear the input immediately
+                          setSheetUrl("");
+
+                          // If backend returns created filenames, append them optimistically to the folder
+                          const addedFiles: string[] =
+                            res.data?.added_files || (res.data?.filename ? [res.data.filename] : []);
+                          if (addedFiles && addedFiles.length) {
+                            setFolders((prev) => ({
+                              ...prev,
+                              [selectedFolder]: [...(prev[selectedFolder] || []), ...addedFiles],
+                            }));
+                            toast.success("Sheet imported and files added to the folder");
+                          } else {
+                            // fallback: refresh from server
+                            fetchFiles();
+                            toast.success("Sheet import requested — files will be added to the folder");
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          toast.error("Failed to import sheet. Check the URL or backend.");
+                        } finally {
+                          setIsImportingSheet(false);
+                        }
+                      }}
+                      variant="default"
+                    >
+                      {isImportingSheet ? "Importing..." : "Import Sheet"}
+                    </Button>
+                  </div>
                   {pendingFile && (
                     <Button variant="destructive" onClick={handleReplace}>
                       Replace File
@@ -245,12 +315,27 @@ export default function AdminFileManager() {
             <ScrollArea className="h-72 pr-2">
               <ul className="space-y-3">
                 {availableModals.map((modal) => (
-                  <li key={modal} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedModals.includes(modal)}
-                      onCheckedChange={() => toggleModalSelection(modal)}
-                    />
-                    <span>{modal}</span>
+                  <li key={modal} className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedModals.includes(modal)}
+                        onCheckedChange={() => toggleModalSelection(modal)}
+                      />
+                      <span>{modal}</span>
+                    </div>
+                    <div>
+                      {selectedModals.includes(modal) ? (
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="activeModal"
+                            checked={activeModal === modal}
+                            onChange={() => setActiveModalAndSave(modal)}
+                          />
+                          <span className="text-sm text-gray-500">Active</span>
+                        </label>
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -260,6 +345,9 @@ export default function AdminFileManager() {
               <span className="font-medium">
                 {selectedModals.join(", ") || "None"}
               </span>
+              <div className="mt-2">
+                Active Modal: <span className="font-medium">{activeModal || "None"}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
