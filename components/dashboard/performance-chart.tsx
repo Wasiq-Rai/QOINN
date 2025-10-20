@@ -189,10 +189,22 @@ const PerformanceChart = () => {
 
     const minValue = Math.min(...positiveValues);
     const maxValue = Math.max(...positiveValues);
-
+    
+    // Calculate the data range
+    const dataRange = maxValue - minValue;
+    
+    // Add extra padding based on the data range
+    const padding = dataRange * 0.2; // 20% padding
+    
     // For log mode, set min to a small positive value if needed
-    const scaledMin = minValue * 0.95 > 0 ? minValue * 0.95 : 1e-6;
-    const scaledMax = maxValue * 1.05;
+    let scaledMin = Math.max(minValue - padding, dataType === "log" ? 1e-6 : 0);
+    let scaledMax = maxValue + padding;
+    
+    // If all values are above 1 and close together, extend the range
+    if (minValue > 1 && maxValue < 2) {
+        scaledMin = Math.max(0.8, scaledMin);
+        scaledMax = Math.min(1.9, scaledMax);
+    }
 
     return [scaledMin, scaledMax];
   };
@@ -205,8 +217,6 @@ const PerformanceChart = () => {
         model,
         timeline
       );
-      console.log("SImulated:", simulatedResponse)
-      console.log("Real", realResponse)
       // Normalize shapes: backend may return model as nested array [ [ ... ] ]
       const simModelRaw = simulatedResponse.data.model;
       const simModel = Array.isArray(simModelRaw) && Array.isArray(simModelRaw[0]) ? simModelRaw[0] : simModelRaw || [];
@@ -675,6 +685,18 @@ const PerformanceChart = () => {
                 tickCount={200}
                 allowDataOverflow={dataType === "log"}
                 domain={yAxisDomain}
+                label={{ 
+                  value: `Value (${dataType === "log" ? "Logarithmic" : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 15,
+                  style: { 
+                    fill: '#666',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    textAnchor: 'middle'
+                  }
+                }}
               />
               <Tooltip
                 contentStyle={{

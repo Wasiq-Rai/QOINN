@@ -185,7 +185,6 @@ const IndexFundTracking = () => {
         );
         setStocks(stockData);
       } catch (err) {
-        console.log(err);
         setError("Failed to fetch stock data");
       } finally {
         setLoading(false);
