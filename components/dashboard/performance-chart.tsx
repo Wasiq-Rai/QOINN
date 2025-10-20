@@ -136,6 +136,7 @@ const PerformanceChart = () => {
     const getLiveChartModels = async () => {
       try {
         const liveModels = await getLiveModels();
+        
         if (liveModels && liveModels.selected_modals.length > 0) {
           setLiveModels(liveModels.selected_modals);
 
