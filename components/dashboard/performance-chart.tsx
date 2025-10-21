@@ -136,7 +136,7 @@ const PerformanceChart = () => {
     const getLiveChartModels = async () => {
       try {
         const liveModels = await getLiveModels();
-        
+
         if (liveModels && liveModels.selected_modals.length > 0) {
           setLiveModels(liveModels.selected_modals);
 
@@ -173,7 +173,7 @@ const PerformanceChart = () => {
   };
 
   // Enhanced function to calculate Y-axis domain with custom scaling
-  // Always returns [number, number] for log mode shared domain
+  // Returns [number, number] or ["auto","auto"] when data is missing
   const calculateYAxisDomain = (data: any[]): [number, number] | ["auto", "auto"] => {
     if (!data || data.length === 0) return ["auto", "auto"];
 
@@ -190,21 +190,31 @@ const PerformanceChart = () => {
 
     const minValue = Math.min(...positiveValues);
     const maxValue = Math.max(...positiveValues);
-    
-    // Calculate the data range
+
+    // Determine a padding that is either a fraction of the range or a sensible minimum
     const dataRange = maxValue - minValue;
-    
-    // Add extra padding based on the data range
-    const padding = dataRange * 0.2; // 20% padding
-    
-    // For log mode, set min to a small positive value if needed
-    let scaledMin = Math.max(minValue - padding, dataType === "log" ? 1e-6 : 0);
+    let padding: number;
+    if (dataRange <= 0) {
+      // All values equal or nearly equal: provide a small absolute padding
+      padding = Math.max(Math.abs(minValue) * 0.05, 0.5);
+    } else {
+      // Use at least 10% of range but ensure a minimum sensible padding (e.g., 0.1)
+      padding = Math.max(dataRange * 0.1, 0.1);
+    }
+
+    let scaledMin = minValue - padding;
     let scaledMax = maxValue + padding;
-    
-    // If all values are above 1 and close together, extend the range
+
+    // Special-case: if values are clustered between 1 and 2, expand to at least [0.8, 1.9]
     if (minValue > 1 && maxValue < 2) {
-        scaledMin = Math.max(0.8, scaledMin);
-        scaledMax = Math.min(1.9, scaledMax);
+      scaledMin = Math.min(scaledMin, 0.8);
+      scaledMin = Math.max(scaledMin, 0.8); // ensure not above 0.8
+      scaledMax = Math.max(scaledMax, 1.9);
+    }
+
+    // For log mode ensure the min is positive
+    if (dataType === "log") {
+      scaledMin = Math.max(scaledMin, 1e-6);
     }
 
     return [scaledMin, scaledMax];
@@ -494,24 +504,10 @@ const PerformanceChart = () => {
     updateChartData("real");
   }, [absoluteMode]);
 
-  // Shared Y-axis domain for log mode
-  const [sharedLogDomain, setSharedLogDomain] = useState<[number, number]>([1e-6, 1]);
   // Version counter to force chart re-mount and trigger animations on key changes
   const [chartVersion, setChartVersion] = useState(0);
 
-  useEffect(() => {
-    if (dataType === "log" && simulatedData && filteredData) {
-      const simProcessed = processChartData(simulatedData, "simulated");
-      const realProcessed = processChartData(filteredData, "real");
-      const all = [...simProcessed, ...realProcessed];
-      const domain = calculateYAxisDomain(all);
-      if (Array.isArray(domain) && typeof domain[0] === 'number' && typeof domain[1] === 'number') {
-        setSharedLogDomain(domain as [number, number]);
-      } else {
-        setSharedLogDomain([1e-6, 1]);
-      }
-    }
-  }, [dataType, simulatedData, filteredData]);
+  // we intentionally removed shared log domain so each chart computes its own domain
 
   // bump chartVersion to trigger re-mount (and therefore animations) when important controls change
   useEffect(() => {
@@ -533,14 +529,16 @@ const PerformanceChart = () => {
   ) => {
     const processedData = processChartData(chartData, chartType);
     const isSimulated = chartType === "simulated";
-    // Use shared domain for log mode, otherwise calculate per chart
-    const yAxisDomain = dataType === "log" ? sharedLogDomain : calculateYAxisDomain(processedData);
+  // Always calculate per-chart Y axis domain so simulated and real charts can differ
+  const yAxisDomain = calculateYAxisDomain(processedData);
 
     return (
       <Paper
         elevation={3}
         sx={{
           p: 3,
+          pl: 0, // reduce left padding to reclaim horizontal space
+          ml: 0,
           height: "100%",
           borderRadius: 3,
           background: "rgba(255, 255, 255, 0.6)",
@@ -665,7 +663,7 @@ const PerformanceChart = () => {
 
         <div ref={ref}>
           <ResponsiveContainer width="100%" height={600}>
-            <LineChart key={`chart-${chartVersion}`} data={processedData}>
+            <LineChart key={`chart-${chartVersion}`} data={processedData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
               <XAxis
                 dataKey="date"
@@ -680,21 +678,21 @@ const PerformanceChart = () => {
                     ? `${tick.toFixed(0)}%`
                     : tick.toFixed(2)
                 }
-                width={80}
+                width={150} // wider to give label room and allow pushing label further left
                 height={120}
                 tick={{ fill: "#666", fontSize: 12 }}
-                tickCount={200}
+                tickCount={10}
                 allowDataOverflow={dataType === "log"}
                 domain={yAxisDomain}
                 label={{ 
-                  value: `Value (${dataType === "log" ? "Logarithmic" : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
+                  value: `Value (${dataType === "log" ? " Log " : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
                   angle: -90,
-                  position: 'insideLeft',
-                  offset: 15,
+                  position: 'outsideLeft', // place outside to avoid overlap with ticks
+                  offset: 40, // push label further left
                   style: { 
-                    fill: '#666',
+                    fill: '#333',
                     fontSize: 16,
-                    fontWeight: 'bold',
+                    fontWeight: 700,
                     textAnchor: 'middle'
                   }
                 }}
