@@ -529,8 +529,40 @@ const PerformanceChart = () => {
   ) => {
     const processedData = processChartData(chartData, chartType);
     const isSimulated = chartType === "simulated";
-  // Always calculate per-chart Y axis domain so simulated and real charts can differ
-  const yAxisDomain = calculateYAxisDomain(processedData);
+    // Always calculate per-chart Y axis domain so simulated and real charts can differ
+    const yAxisDomain = calculateYAxisDomain(processedData);
+
+    // decide if Y-axis numbers are large (more than two digits) so we can move the label
+    let labelPositionProps: any = {};
+    let yAxisWidth = 100;
+    if (Array.isArray(yAxisDomain) && typeof yAxisDomain[0] === 'number' && typeof yAxisDomain[1] === 'number') {
+      const maxAbs = Math.max(Math.abs(yAxisDomain[0]), Math.abs(yAxisDomain[1]));
+      const isLarge = maxAbs >= 1000; // three or more digits (>=100)
+      if (isLarge) {
+        // place label at top of Y axis line, nudge right (dx) and add top padding (dy)
+        labelPositionProps = {
+          position: 'top',
+          angle: 0,
+          offset: 0,
+          dx: 58, // translate right so label centers above axis line
+          dy: 5, // push down a bit so it has top padding and isn't clipped
+        };
+        yAxisWidth = 80; // reduce left width since label sits on top
+      } else {
+        // default: outside left
+        labelPositionProps = {
+          position: 'outsideLeft',
+          angle: -90,
+          offset: 18,
+          dx: -20
+        };
+        yAxisWidth = 90;
+      }
+    } else {
+      // fallback
+      labelPositionProps = { position: 'outsideLeft', angle: -90, offset: 18 };
+      yAxisWidth = 100;
+    }
 
     return (
       <Paper
@@ -678,7 +710,7 @@ const PerformanceChart = () => {
                     ? `${tick.toFixed(0)}%`
                     : tick.toFixed(2)
                 }
-                width={150} // wider to give label room and allow pushing label further left
+                width={yAxisWidth}
                 height={120}
                 tick={{ fill: "#666", fontSize: 12 }}
                 tickCount={10}
@@ -686,9 +718,8 @@ const PerformanceChart = () => {
                 domain={yAxisDomain}
                 label={{ 
                   value: `Value (${dataType === "log" ? " Log " : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
-                  angle: -90,
-                  position: 'outsideLeft', // place outside to avoid overlap with ticks
-                  offset: 40, // push label further left
+                  // spread computed label position props
+                  ...labelPositionProps,
                   style: { 
                     fill: '#333',
                     fontSize: 16,
