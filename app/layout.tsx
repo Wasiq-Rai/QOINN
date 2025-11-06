@@ -2,9 +2,8 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { Inter } from "next/font/google"
-import {
-  ClerkProvider,
-} from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
+import { AuthProvider } from '@/components/AuthProvider'
 import { PremiumProvider } from '@/context/PremiumContext'
 import { EquityProvider } from '@/context/EquityContext'
 import { AdminProvider } from '@/context/AdminContext'
@@ -27,19 +26,21 @@ export default function RootLayout({
   return (
     
     <ClerkProvider>
-    <AdminProvider>
-    <PremiumProvider>
-    <EquityProvider>
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
-    </EquityProvider>
-    </PremiumProvider>
-    </AdminProvider>
+      <AdminProvider>
+        <PremiumProvider>
+          <EquityProvider>
+            <AuthProvider>
+              <html lang="en" suppressHydrationWarning>
+                <body className={inter.className}>
+                  <ThemeProvider>
+                    {children}
+                  </ThemeProvider>
+                </body>
+              </html>
+            </AuthProvider>
+          </EquityProvider>
+        </PremiumProvider>
+      </AdminProvider>
     </ClerkProvider>
   )
 }

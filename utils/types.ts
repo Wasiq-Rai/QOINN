@@ -130,7 +130,7 @@ export interface LoginResponse {
   }
 
   export interface SiteMetrics {
-    total_visitors: number;
+    total_investors: number;
     total_logins: number;
     total_investments: number | string;
   }
@@ -138,8 +138,9 @@ export interface LoginResponse {
   export interface AdminMetricsManagerProps {
     isOpen: boolean;
     onClose: () => void;
-    onUpdate: (amount: number) => void;
+    onUpdate: (amount: number, investors: number) => void;
     currentAmount: number;
+    currentInvestors: number;
   }
 
   export interface User {

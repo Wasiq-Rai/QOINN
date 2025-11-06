@@ -18,7 +18,7 @@ export const SiteMetricsDashboard = () => {
   const [allUsers, setAllUsers]= useState<User[]>([]);
   const { theme } = useTheme();
   const [metrics, setSiteMetrics] = useState<SiteMetrics>({
-    total_visitors: 0,
+    total_investors: 0,
     total_logins: 0,
     total_investments: "0",
   });
@@ -33,7 +33,7 @@ export const SiteMetricsDashboard = () => {
       const users = await getTotalUsers();
       setAllUsers(users);
       setSiteMetrics({
-        total_visitors: investment.data.total_visitors || 0,
+        total_investors: investment.data.total_investors || 0,
         total_logins: users.length,
         total_investments: investment.data.total_investments.toString(),
       });
@@ -50,10 +50,10 @@ export const SiteMetricsDashboard = () => {
       return () => clearInterval(interval);
   }, []);
 
-  const handleInvestmentUpdate = async (amount: number) => {
+  const handleInvestmentUpdate = async (amount: number, investors: number) => {
     if (amount && amount > 0) {
       try {
-        const response = await getInvestments(amount);
+        const response = await getInvestments(amount, investors);
 
         if (response.ok) {
           fetchMetrics();
@@ -99,10 +99,10 @@ export const SiteMetricsDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Total Visitors
+                    Total Investors
                   </p>
                   <h3 className="text-2xl font-bold text-gray-900">
-                    {metrics.total_visitors.toLocaleString()}
+                    {metrics.total_investors.toLocaleString()}
                   </h3>
                 </div>
               </div>
@@ -166,6 +166,7 @@ export const SiteMetricsDashboard = () => {
         onClose={() => setIsUpdateModalOpen(false)}
         onUpdate={handleInvestmentUpdate}
         currentAmount={Number(metrics.total_investments)}
+        currentInvestors={metrics.total_investors}
       />
 
       <UserManagementModal

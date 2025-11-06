@@ -21,12 +21,20 @@ interface PerformanceSummaryProps {
 
 const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, dataType }) => {
   // Calculate key metrics
-  const currentValue = modelData[modelData.length - 1];
-  const initialValue = modelData[0];
+  const currentValue = [...modelData].reverse().find(value => value !== 1) ?? modelData[modelData.length - 1];
+  const initialValue = modelData.find(value => value !== 1) ?? modelData[0];
   const totalChange = currentValue - initialValue;
   const percentageChange = (totalChange / initialValue) * 100;
-  const dailyChange = modelData[modelData.length - 1] - modelData[modelData.length - 2];
-  const dailyPercentageChange = (dailyChange / modelData[modelData.length - 2]) * 100;
+  
+  // Find last two non-one values for daily change calculation
+  const reversedData = [...modelData].reverse();
+  const lastNonOne = reversedData.findIndex(value => value !== 1);
+  const secondLastNonOne = reversedData.slice(lastNonOne + 1).findIndex(value => value !== 1);
+  const lastValue = lastNonOne !== -1 ? reversedData[lastNonOne] : modelData[modelData.length - 1];
+  const prevValue = secondLastNonOne !== -1 ? reversedData[secondLastNonOne + lastNonOne + 1] : modelData[modelData.length - 2];
+  
+  const dailyChange = lastValue - prevValue;
+  const dailyPercentageChange = (dailyChange / prevValue) * 100;
   const { theme } = useTheme();
 
   // Determine color and icon based on performance
@@ -39,33 +47,25 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
         {theme.strings.modelPerformanceSummary}
       </Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           <Box display="flex" alignItems="center" gap={2}>
             <MoneyIcon color="primary" />
             <Typography variant="subtitle1">
-              Current Value: {currentValue ? dataType === 'percentage' 
+              Current QOINN Value: {currentValue ? dataType === 'percentage' 
                 ? `${currentValue.toFixed(2)}%` 
                 : `$${currentValue.toFixed(2)}` : 0.00}
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           <Box display="flex" alignItems="center" gap={2}>
             <ChangeIcon color={performanceColor} />
             <Typography variant="subtitle1" color={performanceColor}>
-              Total Change: {totalChange ? totalChange.toFixed(2) : 0.00} 
-              {dataType === 'percentage' ? '%' : ''}
+              {`Total Return: ${percentageChange ? percentageChange.toFixed(2) : 0.00}%`}
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Chip
-            label={`Total Return: ${percentageChange ? percentageChange.toFixed(2) : 0.00}%`}
-            color={performanceColor}
-            variant="outlined"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           <Chip
             label={`Daily Change: ${dailyPercentageChange ? dailyPercentageChange.toFixed(2) : 0.00}%`}
             color={dailyPercentageChange >= 0 ? 'success' : 'error'}

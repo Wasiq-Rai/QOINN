@@ -102,35 +102,62 @@ const PerformanceChart = () => {
     "simulated" | "real" | null
   >(null);
 
-  const [startDate, setStartDate] = useState<string>("");
-  const [filteredData, setFilteredData] = useState<ChartData | null>(null);
+  const [dateRange, setDateRange] = useState<{from: string; to: string}>({ from: "", to: "" });
+  const [filteredRealData, setFilteredRealData] = useState<ChartData | null>(null);
+  const [filteredSimulatedData, setFilteredSimulatedData] = useState<ChartData | null>(null);
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDate(e.target.value);
+  const handleDateChange = (type: 'from' | 'to') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange(prev => ({ ...prev, [type]: e.target.value }));
   };
 
-  const filterDataFromDate = (data: ChartData, date: string) => {
-    if (!date || !data) return data;
+  const filterDataByDateRange = (data: ChartData, range: {from: string; to: string}) => {
+    if (!data || !data.dates) return data;
+    if (!range.from && !range.to) return data;
 
-    const dateIndex = data.dates.findIndex((d) => d === date);
-    if (dateIndex === -1) return data;
+    // Convert dates to timestamps for comparison
+    const fromDate = range.from ? new Date(range.from).getTime() : -Infinity;
+    const toDate = range.to ? new Date(range.to).getTime() : Infinity;
 
-    return {
+    // Find indices that fall within the range
+    const fromIndex = data.dates.findIndex(
+      (d) => new Date(d).getTime() >= fromDate
+    );
+    const toIndexRaw = data.dates.findIndex(
+      (d) => new Date(d).getTime() > toDate
+    );
+    const toIndex = toIndexRaw === -1 ? data.dates.length : toIndexRaw;
+
+
+    // If no valid range found, return original data
+    if (fromIndex === -1 || fromIndex >= data.dates.length) {
+      return data;
+    }
+
+    const filtered = {
       ...data,
-      dates: data.dates.slice(dateIndex),
-      spy: data.spy.slice(dateIndex),
-      voo: data.voo.slice(dateIndex),
-      model: data.model.slice(dateIndex),
+      dates: data.dates.slice(fromIndex, toIndex),
+      spy: data.spy.slice(fromIndex, toIndex),
+      voo: data.voo.slice(fromIndex, toIndex),
+      model: data.model.slice(fromIndex, toIndex),
     };
+
+    return filtered;
   };
 
   useEffect(() => {
-    if (realData && startDate) {
-      setFilteredData(filterDataFromDate(realData, startDate));
+    if (realData) {
+      const filteredReal = filterDataByDateRange(realData, dateRange);
+      setFilteredRealData(filteredReal);
     } else {
-      setFilteredData(realData);
+      setFilteredRealData(null);
     }
-  }, [startDate, realData]);
+    if (simulatedData) {
+      const filteredSimulated = filterDataByDateRange(simulatedData, dateRange);
+      setFilteredSimulatedData(filteredSimulated);
+    } else {
+      setFilteredSimulatedData(null);
+    }
+  }, [dateRange, realData, simulatedData]);
 
   useEffect(() => {
     const getLiveChartModels = async () => {
@@ -160,11 +187,14 @@ const PerformanceChart = () => {
   }, []);
 
 
-  // Normalizes a series so the first value is 1 (default) or a custom value
+  // Normalizes a series so the first meaningful (non-1, non-zero) value is used as base
+  // If no meaningful base found, falls back to arr[0] (or 1 if arr[0] === 0)
   const normalizeSeries = (arr: number[], initial: number = 1) => {
     if (!arr.length) return [];
-    const first = arr[0] === 0 ? 1 : arr[0];
-    return arr.map((v) => (v / first) * initial);
+    // Prefer the first element that is not 1 and not 0 (meaningful data)
+    const firstMeaningfulIdx = arr.findIndex((v) =>  v !== 1 && v !== 0);
+    const first = firstMeaningfulIdx !== -1 ? arr[firstMeaningfulIdx] : (arr[0] === 0 ? 1 : arr[0]);
+    return arr.map((v) => v !==0 && v !== 1 ? (v / first) * initial : v);
   };
 
   // For legacy code compatibility
@@ -196,10 +226,10 @@ const PerformanceChart = () => {
     let padding: number;
     if (dataRange <= 0) {
       // All values equal or nearly equal: provide a small absolute padding
-      padding = Math.max(Math.abs(minValue) * 0.05, 0.5);
+      padding = Math.max(Math.abs(minValue) * 0.02, 0.1);
     } else {
-      // Use at least 10% of range but ensure a minimum sensible padding (e.g., 0.1)
-      padding = Math.max(dataRange * 0.1, 0.1);
+      // Use smaller padding (5% of range) with a smaller minimum
+      padding = Math.max(dataRange * 0.05, 0.05);
     }
 
     let scaledMin = minValue - padding;
@@ -268,44 +298,68 @@ const PerformanceChart = () => {
     const isPercentage = dataType === "percentage";
     const isLog = dataType === "log";
 
-    // For log mode, normalize all series to start from 10, then apply log10
-    let spyArr = data.spy;
-    let vooArr = data.voo;
+    // For log mode, normalize all series to start from 10, then apply natural log
+    const COMPARISON_START_DATE = new Date('2024-10-10');
+    
+    // Set both SPY and VOO to 1 before the model data starts (2024/10/10)
+    let spyArr = chartType === 'real'
+      ? data.spy.map((value, i) => new Date(data.dates[i]) < COMPARISON_START_DATE ? 1 : value)
+      : data.spy;
+    let vooArr = chartType === 'real'
+      ? data.voo.map((value, i) => new Date(data.dates[i]) < COMPARISON_START_DATE ? 1 : value)
+      : data.voo;
     let modelArr = modelValues;
+    // Normalize/transform the already-modified arrays (so pre-2024/10/10 replacements persist)
     if (dataType === "absolute" && absoluteMode === "normalized") {
-      spyArr = normalizeSeries(data.spy);
-      vooArr = normalizeSeries(data.voo);
-      modelArr = normalizeSeries(modelValues);
+      spyArr = normalizeSeries(spyArr);
+      vooArr = normalizeSeries(vooArr);
+      modelArr = normalizeSeries(modelArr);
     } else if (isLog) {
-      spyArr = normalizeSeries(data.spy, 10);
-      vooArr = normalizeSeries(data.voo, 10);
-      modelArr = normalizeSeries(modelValues, 10);
+      spyArr = normalizeSeries(spyArr, 10);
+      vooArr = normalizeSeries(vooArr, 10);
+      modelArr = normalizeSeries(modelArr, 10);
     }
 
-    const processedData = data.dates.map((date, index) => ({
-      date,
-      SPY: isPercentage
-        ? (data.spy[index] / data.spy[0] - 1) * 100
-        : isLog
-        ? Math.log10(spyArr[index] > 0 ? spyArr[index] : 1e-6)
-        : dataType === "absolute" && absoluteMode === "normalized"
-        ? spyArr[index]
-        : data.spy[index],
-      VOO: isPercentage
-        ? (data.voo[index] / data.voo[0] - 1) * 100
-        : isLog
-        ? Math.log10(vooArr[index] > 0 ? vooArr[index] : 1e-6)
-        : dataType === "absolute" && absoluteMode === "normalized"
-        ? vooArr[index]
-        : data.voo[index],
-      Model: isPercentage
-        ? (modelValues[index] / modelValues[0] - 1) * 100
-        : isLog
-        ? Math.log10(modelArr[index] > 0 ? modelArr[index] : 1e-6)
-        : dataType === "absolute" && absoluteMode === "normalized"
-        ? modelArr[index]
-        : modelValues[index],
-    }));
+    // Determine first-non-one index to use as baseline for percentage calculations
+    let baseIndex = modelArr.findIndex((v) => isFinite(v) && v !== 1 && v !== 0);
+    if (baseIndex === -1) baseIndex = spyArr.findIndex((v) => isFinite(v) && v !== 1 && v !== 0);
+    if (baseIndex === -1) baseIndex = vooArr.findIndex((v) => isFinite(v) && v !== 1 && v !== 0);
+    if (baseIndex === -1) baseIndex = 0;
+
+    const processedData = data.dates.map((date, index) => {
+      const currentDate = new Date(date);
+      // Use the comparison start date defined earlier (COMPARISON_START_DATE)
+      const vooValue = currentDate < COMPARISON_START_DATE ? 1 : vooArr[index];
+      // compute baseline values for percentage mode using baseIndex
+      const spyBase = spyArr[baseIndex] ?? spyArr[0] ?? 1;
+      const vooBase = vooArr[baseIndex] ?? vooArr[0] ?? 1;
+      const modelBase = modelArr[baseIndex] ?? modelArr[0] ?? 1;
+
+      return {
+        date,
+        SPY: isPercentage
+          ? spyArr[index] !==0 && spyArr[index] !== 1 ? (spyArr[index] / spyBase - 1) * 100 :  0
+          : isLog
+          ? Math.log(spyArr[index] > 0 ? spyArr[index] : 1e-6)
+          : dataType === "absolute" && absoluteMode === "normalized"
+          ? spyArr[index]
+          : spyArr[index],
+        VOO: isPercentage
+          ? vooArr[index] !== 0 && vooArr[index] !== 1 ? (vooArr[index] / vooBase - 1) * 100 : 0
+          : isLog
+          ? Math.log(vooValue > 0 ? vooValue : 1e-6)
+          : dataType === "absolute" && absoluteMode === "normalized"
+          ? vooArr[index]
+          : vooArr[index],
+        Model: isPercentage
+          ? modelArr[index] !==0 && modelArr[index] !== 1 ? (modelArr[index] / modelBase - 1) * 100 : 0
+          : isLog
+          ? Math.log(modelArr[index] > 0 ? modelArr[index] : 1e-6)
+          : dataType === "absolute" && absoluteMode === "normalized"
+          ? modelArr[index]
+          : modelValues[index],
+      };
+    });
 
     return processedData;
   };
@@ -383,63 +437,6 @@ const PerformanceChart = () => {
     }
   }, [simulatedModelData]);
 
-  // Add a new day to simulated data (append date and default value)
-  const addSimulatedDay = async () => {
-    // determine next date
-    const lastDateStr = simulatedData?.dates?.[simulatedData.dates.length - 1];
-    const lastDate = lastDateStr ? new Date(lastDateStr) : new Date();
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-    const isoDate = nextDate.toISOString().split("T")[0];
-
-    // default value: copy last absolute value or 0
-    const lastVal = simulatedModelData.length ? simulatedModelData[simulatedModelData.length - 1] : 0;
-    const newVal = lastVal || 0;
-
-    const newModel = [...simulatedModelData, newVal];
-    const newDates = simulatedData?.dates ? [...simulatedData.dates, isoDate] : [isoDate];
-
-    setSimulatedModelData(newModel);
-    if (simulatedData) {
-      setSimulatedData({ ...simulatedData, model: newModel, dates: newDates });
-    }
-
-    const newNormalized = normalizeSeries(newModel);
-    setSimulatedNormalizedModelData(newNormalized);
-
-    // persist to backend
-    if (isAdmin && simulatedData) {
-      await saveDataToBackend("simulated", newDates, newModel, newNormalized);
-    }
-  };
-
-  // Add a new day to real data (append date and default value)
-  const addRealDay = async () => {
-    const lastDateStr = realData?.dates?.[realData.dates.length - 1];
-    const lastDate = lastDateStr ? new Date(lastDateStr) : new Date();
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(nextDate.getDate() + 1);
-    const isoDate = nextDate.toISOString().split("T")[0];
-
-    const lastVal = realModelData.length ? realModelData[realModelData.length - 1] : 0;
-    const newVal = lastVal || 0;
-
-    const newModel = [...realModelData, newVal];
-    const newDates = realData?.dates ? [...realData.dates, isoDate] : [isoDate];
-
-    setRealModelData(newModel);
-    if (realData) {
-      setRealData({ ...realData, model: newModel, dates: newDates });
-    }
-
-    const newNormalized = normalizeSeries(newModel);
-    setRealNormalizedModelData(newNormalized);
-
-    if (isAdmin && realData) {
-      await saveDataToBackend("real", newDates, newModel, newNormalized);
-    }
-  };
-
   // Keep normalized real data in sync whenever realModelData changes
   useEffect(() => {
     if (realModelData && realModelData.length > 0) {
@@ -513,7 +510,7 @@ const PerformanceChart = () => {
   useEffect(() => {
     setChartVersion((v) => v + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeModel, activeTimeline, dataType, absoluteMode, startDate]);
+  }, [activeModel, activeTimeline, dataType, absoluteMode, dateRange]);
 
   // Also force remount when new fetched data arrives
   useEffect(() => {
@@ -594,92 +591,7 @@ const PerformanceChart = () => {
             </span>
           </h1>
 
-          {!isSimulated && (
-            <Box
-              display="flex"
-              flexWrap="wrap"
-              alignItems={{ xs: "stretch", sm: "center" }}
-              gap={1.5}
-              sx={{
-                background: "rgba(255,255,255,0.4)",
-                borderRadius: 3,
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                p: 1.5,
-                width: "100%",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                flexDirection: { xs: "column", sm: "row" }, // Stack on mobile
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: 600,
-                  color: "rgba(0,0,0,0.8)",
-                  fontSize: "1rem",
-                  whiteSpace: { xs: "normal", sm: "nowrap" }, // Allow wrapping on mobile
-                }}
-              >
-                View From:
-              </Typography>
 
-              <TextField
-                type="date"
-                value={startDate}
-                onChange={handleDateChange}
-                size="small"
-                sx={{
-                  flex: { xs: "1 1 auto", sm: "unset" },
-                  width: { xs: "100%", sm: "auto" },
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                    backgroundColor: "rgba(255,255,255,0.7)",
-                    backdropFilter: "blur(4px)",
-                    "& fieldset": {
-                      borderColor: "rgba(0,0,0,0.1)",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(0,0,0,0.3)",
-                    },
-                  },
-                  "& .MuiInputBase-input": {
-                    py: 1.2,
-                    px: 1.5,
-                    fontSize: "0.9rem",
-                    color: "rgba(0,0,0,0.9)",
-                  },
-                }}
-                inputProps={{
-                  max: new Date().toISOString().split("T")[0],
-                }}
-              />
-
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setStartDate("")}
-                sx={{
-                  textTransform: "none",
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontWeight: 500,
-                  fontSize: "0.85rem",
-                  borderColor: "rgba(0,0,0,0.15)",
-                  color: "rgba(0,0,0,0.8)",
-                  backgroundColor: "rgba(255,255,255,0.5)",
-                  backdropFilter: "blur(2px)",
-                  width: { xs: "100%", sm: "auto" }, // Full width on mobile
-                  "&:hover": {
-                    borderColor: "rgba(0,0,0,0.3)",
-                    backgroundColor: "rgba(255,255,255,0.7)",
-                  },
-                }}
-              >
-                Reset
-              </Button>
-            </Box>
-          )}
         </Box>
 
         <Box display="flex" justifyContent="end" alignItems="center" mb={2}>
@@ -713,22 +625,28 @@ const PerformanceChart = () => {
                 width={yAxisWidth}
                 height={120}
                 tick={{ fill: "#666", fontSize: 12 }}
-                tickCount={10}
+                tickCount={8}
                 allowDataOverflow={dataType === "log"}
                 domain={yAxisDomain}
                 label={{ 
-                  value: `Value (${dataType === "log" ? " Log " : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
+                  value: `Value (${dataType === "log" ? "Natural Log" : dataType === "percentage" ? "Percentage" : absoluteMode === "normalized" ? "Normalized" : "Absolute"})`,
                   // spread computed label position props
                   ...labelPositionProps,
                   style: { 
                     fill: '#333',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                     textAnchor: 'middle'
                   }
                 }}
               />
               <Tooltip
+                formatter={(value: number, name: string) => {
+                  if (dataType === "percentage") {
+                    return [`${value.toFixed(2)}%`, name];
+                  }
+                  return [value, name];
+                }}
                 contentStyle={{
                   background: "#fff",
                   border: "none",
@@ -798,7 +716,7 @@ const PerformanceChart = () => {
 
   return (
     <>
-  <PerformanceSummary modelData={simulatedModelData} dataType={dataType === "log" ? "absolute" : dataType} />
+  <PerformanceSummary modelData={realModelData} dataType={dataType === "log" ? "absolute" : dataType} />
       <Box sx={{ flexGrow: 1, p: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -895,21 +813,80 @@ const PerformanceChart = () => {
                   </Select>
                 </FormControl>
               )}
+
+              {/* Date Range Selector */}
+              <Box
+                display="flex"
+                gap={1}
+                sx={{
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'stretch', sm: 'center' },
+                  minWidth: { xs: '100%', sm: 'auto' },
+                  flexGrow: 1,
+                }}
+              >
+                <TextField
+                  type="date"
+                  label="From Date"
+                  value={dateRange.from}
+                  onChange={handleDateChange('from')}
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    minWidth: { xs: '100%', sm: 160 },
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.7)",
+                    }
+                  }}
+                  inputProps={{
+                    max: dateRange.to || new Date().toISOString().split("T")[0],
+                  }}
+                />
+                <TextField
+                  type="date"
+                  label="To Date"
+                  value={dateRange.to}
+                  onChange={handleDateChange('to')}
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    minWidth: { xs: '100%', sm: 160 },
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "rgba(255,255,255,0.7)",
+                    }
+                  }}
+                  inputProps={{
+                    min: dateRange.from,
+                    max: new Date().toISOString().split("T")[0],
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setDateRange({ from: '', to: '' })}
+                  sx={{
+                    height: 40,
+                    minWidth: { xs: '100%', sm: 'auto' },
+                  }}
+                >
+                  Reset Dates
+                </Button>
+              </Box>
             </Box>
           </Grid>
 
           <Grid item xs={12}>
-            {simulatedData &&
+            {filteredSimulatedData &&
               renderPerformanceChart(
-                simulatedData,
+                filteredSimulatedData,
                 "simulated",
                 simulatedChartRef,
                 theme
               )}
           </Grid>
           <Grid item xs={12}>
-            {filteredData &&
-              renderPerformanceChart(filteredData, "real", realChartRef, theme)}
+            {filteredRealData &&
+              renderPerformanceChart(filteredRealData, "real", realChartRef, theme)}
           </Grid>
         </Grid>
       </Box>

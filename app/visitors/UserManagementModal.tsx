@@ -17,27 +17,6 @@ interface UserManagementModalProps {
 export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserManagementModalProps) => {
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
-  const handleMakeAdmin = async (userId: string) => {
-    setActionInProgress(userId);
-    try {
-      const response = await fetch("/api/users/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (response.ok) {
-        setUsers((prevUsers) =>
-          prevUsers.map((user) => (user.id === userId ? { ...user, isAdmin: true } : user))
-        );
-      }
-    } catch (error) {
-      console.error("Error making user admin:", error);
-    } finally {
-      setActionInProgress(null);
-    }
-  };
-
   const handleDeleteUser = async (userId: string) => {
     setActionInProgress(userId);
     try {
@@ -108,24 +87,6 @@ export const UserManagementModal = ({ isOpen, onClose, users, setUsers }: UserMa
                   </div>
 
                   <div className="flex space-x-2">
-                    {!user.isAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMakeAdmin(user.id)}
-                        disabled={actionInProgress === user.id}
-                        className="flex items-center space-x-1"
-                      >
-                        {actionInProgress === user.id ? (
-                          <div className="animate-spin h-4 w-4 border-b-2 border-blue-600 rounded-full"></div>
-                        ) : (
-                          <>
-                            <Shield className="h-4 w-4" />
-                            <span>Make Admin</span>
-                          </>
-                        )}
-                      </Button>
-                    )}
                     <Button
                       variant="destructive"
                       size="sm"

@@ -18,6 +18,8 @@ import {
   TickerData,
 } from "./types";
 import { ThemeContent } from "./themes";
+import { getAuthToken, waitForAuthToken } from './auth';
+import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 // export const API_URL = "http://localhost:8000/api";
 export const API_URL = "https://web-production-9b972.up.railway.app/api";
 
@@ -26,6 +28,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Enable sending cookies and authorization headers
 });
 
 // For file uploads (different Content-Type)
@@ -34,16 +37,41 @@ const apiMultipart = axios.create({
   headers: {
     "Content-Type": "multipart/form-data",
   },
+  withCredentials: true, // Enable sending cookies and authorization headers
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers || {}; // Ensure headers exist
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  return config;
-});
+// Configure request interceptor
+api.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    // Wait a short time for the AuthProvider to populate the token if it's not set yet
+    const token = (await waitForAuthToken(3000)) || getAuthToken();
+
+    // Initialize headers if they don't exist
+    if (!config.headers) {
+      config.headers = new AxiosHeaders();
+    }
+
+    if (token) {
+      // Do NOT attach Clerk Authorization header to Django backend requests by default.
+      // Many Django backends use session/cookie or their own auth schemes and will
+      // reject unknown bearer tokens. We still set a request id for tracing.
+      try {
+        if ((config.headers as AxiosHeaders).set) {
+          (config.headers as AxiosHeaders).set('X-Request-Id', crypto.randomUUID());
+        } else {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          config.headers['X-Request-Id'] = crypto.randomUUID();
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const getStocks = async (symbols: string[]): Promise<NormalApiResponse> => {
   const allSymbols = [
@@ -127,23 +155,6 @@ export const getLiveModels = async (): Promise<any> => {
 };
 
 export const fetchStockData = async (symbol: string): Promise<StockData> => {
-  const response = await api.get<TickerData>(
-    `/indicators/fetch_current_value/?symbol=${symbol}`
-  );
-  if (!response) {
-    throw new Error(`Failed to fetch data for ${symbol}`);
-  }
-  return {
-    symbol,
-    name: "", // You can fetch the name separately if needed
-    price: response.data.close,
-    changePercent: response.data.changePercent || 0, // Default to 0 if not provided
-  };
-};
-
-export const fetchIndicatorData = async (
-  symbol: string
-): Promise<IndicatorData> => {
   const response = await api.get<TickerData>(
     `/indicators/fetch_current_value/?symbol=${symbol}`
   );
@@ -248,9 +259,9 @@ export const getMetrics = async (): Promise<any> => {
   }
 };
 
-export const getInvestments = async (amount: number): Promise<any> => {
+export const getInvestments = async (amount: number, investors: number): Promise<any> => {
   try {
-    const response = await api.put(`/metrics/investments/?total_investments=${amount}`);
+    const response = await api.put(`/metrics/investments/?total_investments=${amount}&total_investors=${investors}`);
     return response;
   } catch (error) {
     console.error("Error fetching investments:", error);

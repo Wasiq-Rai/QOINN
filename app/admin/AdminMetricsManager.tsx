@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,23 @@ export const AdminMetricsManager: React.FC<AdminMetricsManagerProps> = ({
   isOpen,
   onClose,
   onUpdate,
-  currentAmount
+  currentAmount,
+  currentInvestors
 }) => {
   const [amount, setAmount] = useState(currentAmount.toString());
+  const [ investors, setInvestors ] = useState(currentInvestors.toString());
+
+  useEffect(() => {
+    setAmount(currentAmount.toString());
+  }, [currentAmount]);
+
+  useEffect(() => {
+    setInvestors(currentInvestors.toString());
+  }, [currentInvestors]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(Number(amount));
+    onUpdate(Number(amount), Number(investors));
     onClose();
   };
 
@@ -22,17 +32,36 @@ export const AdminMetricsManager: React.FC<AdminMetricsManagerProps> = ({
     <Dialog open={isOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Update Total Investments</DialogTitle>
+          <DialogTitle>Update Metrics</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter total investments"
-              className="w-full"
-            />
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="investments" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Total Investments ($)
+              </label>
+              <Input
+                id="investments"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter total investments"
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label htmlFor="investors" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Total Investors
+              </label>
+              <Input
+                id="investors"
+                type="number"
+                value={investors}
+                onChange={(e) => setInvestors(e.target.value)}
+                placeholder="Enter total investors"
+                className="w-full"
+              />
+            </div>
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={onClose}>
