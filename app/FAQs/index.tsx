@@ -15,7 +15,7 @@ const Faq = () => {
         className="flex items-center lg:justify-between gap-4 w-full lg:flex-row flex-col m-auto"
         id="faqs"
       >
-        <div className="flex flex-col items-start gap-3 w-2/5 ">
+        <div className="flex flex-col items-start gap-3 md:w-2/5 sm:w-full ">
           <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold capitalize">
             Frequently asked{" "}
             <span className="">

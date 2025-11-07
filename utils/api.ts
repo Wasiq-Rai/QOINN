@@ -20,8 +20,8 @@ import {
 import { ThemeContent } from "./themes";
 import { getAuthToken, waitForAuthToken } from './auth';
 import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
-// export const API_URL = "http://localhost:8000/api";
-export const API_URL = "https://web-production-9b972.up.railway.app/api";
+export const API_URL = "http://localhost:8000/api";
+// export const API_URL = "https://web-production-9b972.up.railway.app/api";
 
 const api = axios.create({
   baseURL: API_URL,

@@ -56,13 +56,13 @@ const HeroSection = () => {
         <div className="text-center px-4">
           <div className="relative inline-block">
             <div className="relative px-8 py-6 overflow-hidden">
-              <div className="relative min-w-[1000px] min-h-[80px] md:min-w-[1000px] md:min-h-[100px] flex items-center justify-center">
+              <div className="relative w-[100vw] h-full  min-h-[100vh] flex items-center justify-center px-4">
                 {strings.map((string, index) => (
                   <h1
                     key={index}
                     className={`absolute inset-0 flex items-center justify-center font-kigelia 
-                      text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white 
-                      text-center leading-tight transition-opacity duration-1000`}
+                      text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white 
+                      text-center leading-tight transition-opacity duration-1000 px-2`}
                     style={{
                       opacity: index === currentIndex && isVisible ? 1 : 0,
                     }}
