@@ -189,11 +189,11 @@ const PerformanceChart = () => {
 
   // Normalizes a series so the first meaningful (non-1, non-zero) value is used as base
   // If no meaningful base found, falls back to arr[0] (or 1 if arr[0] === 0)
-  const normalizeSeries = (arr: number[], initial: number = 1) => {
+  const normalizeSeries = (arr: number[], initial: number = 1, isQOINN = false) => {
     if (!arr.length) return [];
     // Prefer the first element that is not 1 and not 0 (meaningful data)
     const firstMeaningfulIdx = arr.findIndex((v) =>  v !== 1 && v !== 0);
-    const first = firstMeaningfulIdx !== -1 ? arr[firstMeaningfulIdx] : (arr[0] === 0 ? 1 : arr[0]);
+    const first = isQOINN ? 1 : firstMeaningfulIdx !== -1 ? arr[firstMeaningfulIdx] : (arr[0] === 0 ? 1 : arr[0]);
     return arr.map((v) => v !==0 && v !== 1 ? (v / first) * initial : v);
   };
 
@@ -313,7 +313,7 @@ const PerformanceChart = () => {
     if (dataType === "absolute" && absoluteMode === "normalized") {
       spyArr = normalizeSeries(spyArr);
       vooArr = normalizeSeries(vooArr);
-      modelArr = normalizeSeries(modelArr);
+      modelArr = normalizeSeries(modelArr, 1 , true);
     } else if (isLog) {
       spyArr = normalizeSeries(spyArr, 10);
       vooArr = normalizeSeries(vooArr, 10);
