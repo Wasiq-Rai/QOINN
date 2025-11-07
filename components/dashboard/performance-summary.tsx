@@ -22,7 +22,7 @@ interface PerformanceSummaryProps {
 const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, dataType }) => {
   // Calculate key metrics
   const currentValue = [...modelData].reverse().find(value => value !== 1) ?? modelData[modelData.length - 1];
-  const initialValue = modelData.find(value => value !== 1) ?? modelData[0];
+  const initialValue = 1;
   const totalChange = currentValue - initialValue;
   const percentageChange = (totalChange / initialValue) * 100;
   
