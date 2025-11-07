@@ -52,17 +52,22 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
             <MoneyIcon color="primary" />
             <Typography variant="subtitle1">
               Current QOINN Value: {currentValue ? dataType === 'percentage' 
-                ? `${currentValue.toFixed(2)}%` 
-                : `$${currentValue.toFixed(2)}` : 0.00}
+                ? `${currentValue.toFixed(4)}%` 
+                : `$${currentValue.toFixed(4)}` : 0.00}
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <Box display="flex" alignItems="center" gap={2}>
             <ChangeIcon color={performanceColor} />
-            <Typography variant="subtitle1" color={performanceColor}>
-              {`Total Return: ${percentageChange ? percentageChange.toFixed(2) : 0.00}%`}
-            </Typography>
+            <Box display="flex" alignItems="baseline" gap={1}>
+              <Typography variant="subtitle1" color={performanceColor} sx={{ fontWeight: 600 }}>
+                {`Total Return: ${percentageChange ? percentageChange.toFixed(2) : 0.00}%`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                since 10/10/2024
+              </Typography>
+            </Box>
           </Box>
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
