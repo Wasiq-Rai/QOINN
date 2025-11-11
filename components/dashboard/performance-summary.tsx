@@ -50,7 +50,7 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
         <Grid item xs={12} sm={6} md={4}>
           <Box display="flex" alignItems="center" gap={2}>
             <MoneyIcon color="primary" />
-            <Typography variant="subtitle1">
+            <Typography variant="h6">
               Current QOINN Value: {currentValue ? dataType === 'percentage' 
                 ? `${currentValue.toFixed(4)}%` 
                 : `$${currentValue.toFixed(4)}` : 0.00}
@@ -61,10 +61,10 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
           <Box display="flex" alignItems="center" gap={2}>
             <ChangeIcon color={performanceColor} />
             <Box display="flex" alignItems="baseline" gap={1}>
-              <Typography variant="subtitle1" color={performanceColor} sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" color={performanceColor} sx={{ fontWeight: 600 }}>
                 {`Total Return: ${percentageChange ? percentageChange.toFixed(2) : 0.00}%`}
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
                 since 10/10/2024
               </Typography>
             </Box>
@@ -75,6 +75,9 @@ const PerformanceSummary: React.FC<PerformanceSummaryProps> = ({ modelData, data
             label={`Daily Change: ${dailyPercentageChange ? dailyPercentageChange.toFixed(2) : 0.00}%`}
             color={dailyPercentageChange >= 0 ? 'success' : 'error'}
             variant="outlined"
+            sx={{
+              fontSize: "20px"
+            }}
           />
         </Grid>
       </Grid>
