@@ -90,7 +90,7 @@ const PerformanceChart = () => {
   >([]);
 
   const [dataType, setDataType] = useState<"log" | "percentage" | "absolute">(
-    "log"
+    "percentage"
   );
   const [absoluteMode, setAbsoluteMode] = useState<
     "normalized" | "unnormalized"
@@ -187,6 +187,23 @@ const PerformanceChart = () => {
   }, []);
 
 
+  // Replaces trailing un-key-in placeholder values (0 or 1, per the same
+  // sentinel convention used elsewhere in this file) with the last real
+  // (keyed-in) value, so the line flattens instead of dropping to zero.
+  const flattenTrailingPlaceholders = (arr: number[]) => {
+    if (!arr || arr.length === 0) return arr;
+    let lastRealIdx = -1;
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (arr[i] !== 0 && arr[i] !== 1) {
+        lastRealIdx = i;
+        break;
+      }
+    }
+    if (lastRealIdx === -1 || lastRealIdx === arr.length - 1) return arr;
+    const lastRealValue = arr[lastRealIdx];
+    return arr.map((v, i) => (i > lastRealIdx ? lastRealValue : v));
+  };
+
   // Normalizes a series so the first meaningful (non-1, non-zero) value is used as base
   // If no meaningful base found, falls back to arr[0] (or 1 if arr[0] === 0)
   const normalizeSeries = (arr: number[], initial: number = 1, isQOINN = false) => {
@@ -260,23 +277,35 @@ const PerformanceChart = () => {
       );
       // Normalize shapes: backend may return model as nested array [ [ ... ] ]
       const simModelRaw = simulatedResponse.data.model;
-      const simModel = Array.isArray(simModelRaw) && Array.isArray(simModelRaw[0]) ? simModelRaw[0] : simModelRaw || [];
+      const simModel = flattenTrailingPlaceholders(
+        Array.isArray(simModelRaw) && Array.isArray(simModelRaw[0]) ? simModelRaw[0] : simModelRaw || []
+      );
       const simNormalizedRaw = simulatedResponse.data.normalized_model;
-      const simNormalized = Array.isArray(simNormalizedRaw) && Array.isArray(simNormalizedRaw[0]) ? simNormalizedRaw[0] : simNormalizedRaw;
+      const simNormalized = flattenTrailingPlaceholders(
+        Array.isArray(simNormalizedRaw) && Array.isArray(simNormalizedRaw[0]) ? simNormalizedRaw[0] : simNormalizedRaw
+      );
+      const simSpy = flattenTrailingPlaceholders(simulatedResponse.data.spy);
+      const simVoo = flattenTrailingPlaceholders(simulatedResponse.data.voo);
 
       // Process simulated data
-      setSimulatedData({ ...simulatedResponse.data, model: simModel, normalized_model: simNormalized });
+      setSimulatedData({ ...simulatedResponse.data, model: simModel, normalized_model: simNormalized, spy: simSpy, voo: simVoo });
       setSimulatedModelData(simModel);
       setSimulatedNormalizedModelData(simNormalized || normalize({ ...simulatedResponse.data, model: simModel }));
 
       // Normalize shapes for real data as well
       const realModelRaw = realResponse.data.model;
-      const realModel = Array.isArray(realModelRaw) && Array.isArray(realModelRaw[0]) ? realModelRaw[0] : realModelRaw || [];
+      const realModel = flattenTrailingPlaceholders(
+        Array.isArray(realModelRaw) && Array.isArray(realModelRaw[0]) ? realModelRaw[0] : realModelRaw || []
+      );
       const realNormalizedRaw = realResponse.data.normalized_model;
-      const realNormalized = Array.isArray(realNormalizedRaw) && Array.isArray(realNormalizedRaw[0]) ? realNormalizedRaw[0] : realNormalizedRaw;
+      const realNormalized = flattenTrailingPlaceholders(
+        Array.isArray(realNormalizedRaw) && Array.isArray(realNormalizedRaw[0]) ? realNormalizedRaw[0] : realNormalizedRaw
+      );
+      const realSpy = flattenTrailingPlaceholders(realResponse.data.spy);
+      const realVoo = flattenTrailingPlaceholders(realResponse.data.voo);
 
       // Process real data
-      setRealData({ ...realResponse.data, model: realModel, normalized_model: realNormalized });
+      setRealData({ ...realResponse.data, model: realModel, normalized_model: realNormalized, spy: realSpy, voo: realVoo });
       setRealModelData(realModel);
       setRealNormalizedModelData(realNormalized || normalize({ ...realResponse.data, model: realModel }));
     } catch (error) {
@@ -875,6 +904,10 @@ const PerformanceChart = () => {
           </Grid>
 
           <Grid item xs={12}>
+            {filteredRealData &&
+              renderPerformanceChart(filteredRealData, "real", realChartRef, theme)}
+          </Grid>
+          <Grid item xs={12}>
             {filteredSimulatedData &&
               renderPerformanceChart(
                 filteredSimulatedData,
@@ -882,10 +915,6 @@ const PerformanceChart = () => {
                 simulatedChartRef,
                 theme
               )}
-          </Grid>
-          <Grid item xs={12}>
-            {filteredRealData &&
-              renderPerformanceChart(filteredRealData, "real", realChartRef, theme)}
           </Grid>
         </Grid>
       </Box>
